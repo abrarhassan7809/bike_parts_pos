@@ -7,5 +7,7 @@ class Product(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    price = Column(Float, nullable=False)
+    barcode = Column(String, nullable=False)
+    pur_price = Column(Float, nullable=False)
+    sel_price = Column(Float, nullable=False)
     quantity = Column(Integer, nullable=False)
