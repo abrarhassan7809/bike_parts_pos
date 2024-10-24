@@ -1,6 +1,7 @@
 #invoice_window.py
-from PySide6.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QPushButton, QVBoxLayout, QHeaderView, QMessageBox
+from PySide6.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QPushButton, QVBoxLayout, QHeaderView
 from db_operations import get_all_invoices
+from invoice_detail_window import InvoiceDetailWindow
 
 
 class InvoicesWindow(QWidget):
@@ -43,4 +44,7 @@ class InvoicesWindow(QWidget):
         self.invoice_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
     def show_invoice_details(self, invoice_id):
-        QMessageBox.information(self, "Invoice Details", f"Details for Invoice ID: {invoice_id}")
+        detail_window = InvoiceDetailWindow(invoice_id, self)
+        detail_window.setWindowTitle(f"Invoice Details - {invoice_id}")
+        detail_window.resize(600, 400)
+        detail_window.exec()

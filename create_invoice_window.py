@@ -192,14 +192,10 @@ class CreateInvoiceWindow(QWidget):
         self.remaining_amount_input.setText(str(remaining_amount))
 
     def remove_item(self, row):
-        # Remove the selected row
         self.products_input.removeRow(row)
-
-        # Recalculate grand total after item removal
         self.update_grand_total()
 
     def clear_invoice(self):
-        # Clear the input fields
         self.customer_name_input.clear()
         self.product_name_input.clear()
         self.barcode_input.clear()
@@ -248,5 +244,6 @@ class CreateInvoiceWindow(QWidget):
             }
             insert_invoice(invoice_data)
             QMessageBox.information(self, "Success", "Invoice created successfully!")
+            self.clear_invoice()
         else:
             QMessageBox.warning(self, "Error", "Please fill in all fields and try again.")

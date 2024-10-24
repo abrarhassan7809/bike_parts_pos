@@ -17,6 +17,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Atoms POS System")
         self.setGeometry(200, 200, 1024, 768)
+        self.button_style = "min-width: 100px; min-height: 35px;"
 
         self.tab_manager = TabManager(self)
         self.setCentralWidget(self.tab_manager)
@@ -33,19 +34,23 @@ class MainWindow(QMainWindow):
         # Add dropdown menu
         dropdown = QComboBox(self)
         dropdown.addItems(["Select Options", "All Products", "Incoices"])
+        dropdown.setStyleSheet(self.button_style)
         dropdown.setItemData(0, False, Qt.UserRole - 1)
         dropdown.currentIndexChanged.connect(self.on_dropdown_change)
         toolbar.addWidget(dropdown)
 
         add_product_window = QPushButton("Add Product", self)
+        add_product_window.setStyleSheet(self.button_style)
         add_product_window.clicked.connect(lambda: self.show_insert_tab())
         toolbar.addWidget(add_product_window)
 
         update_product_window = QPushButton("Update Product", self)
+        update_product_window.setStyleSheet(self.button_style)
         update_product_window.clicked.connect(lambda: self.show_update_tab())
         toolbar.addWidget(update_product_window)
 
         invoice_button = QPushButton("Create Invoice", self)
+        invoice_button.setStyleSheet(self.button_style)
         invoice_button.clicked.connect(lambda: self.create_invoice_tab())
         toolbar.addWidget(invoice_button)
 

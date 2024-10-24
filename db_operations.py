@@ -36,10 +36,15 @@ def get_all_invoices():
     return products
 
 def get_invoice_by_id(invoice_id):
-    return session.query(Product).filter_by(id=invoice_id).first()
+    invoice = session.query(Invoice).filter_by(id=invoice_id).first()
+    if invoice:
+        invoice.invoice_with_item = session.query(InvoiceItem).filter_by(invoice_id=invoice_id).all()
+    return invoice
+
 
 def get_product_by_barcode(barcode):
-    return session.query(Product).filter_by(barcode=barcode).first()
+    products = session.query(Product).filter_by(barcode=barcode).first()
+    return products
 
 def get_product_by_name(name):
     return session.query(Product).filter_by(name=name).first()
@@ -73,4 +78,11 @@ def insert_invoice(invoice_data):
     session.add(invoice)
     session.commit()
 
-
+def get_invoice_details(invoice_id):
+    invoice_details = {
+        'items': [
+            {'product_name': 'Product A', 'quantity': 2, 'sell_price': 50.0, 'total_price': 100.0},
+            {'product_name': 'Product B', 'quantity': 1, 'sell_price': 30.0, 'total_price': 30.0}
+        ]
+    }
+    return invoice_details
