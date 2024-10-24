@@ -1,0 +1,46 @@
+#invoice_window.py
+from PySide6.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QPushButton, QVBoxLayout, QHeaderView, QMessageBox
+from db_operations import get_all_invoices
+
+
+class InvoicesWindow(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.parent = parent
+        self.all_invoices = []
+        self.init_ui()
+
+    def init_ui(self):
+        self.layout = QVBoxLayout(self)
+        self.invoice_table = QTableWidget(self)
+        self.layout.addWidget(self.invoice_table)
+
+        self.load_all_invoices()
+
+    def load_all_invoices(self):
+        self.all_invoices = get_all_invoices()
+        self.update_invoice_table(self.all_invoices)
+
+    def update_invoice_table(self, invoices):
+        self.invoice_table.setRowCount(len(invoices))
+        self.invoice_table.setColumnCount(5)
+        self.invoice_table.setHorizontalHeaderLabels(
+            ['Invoice ID', 'Customer Name', 'Date', 'Total Amount', 'Details'])
+
+        for row, invoice in enumerate(invoices):
+            self.invoice_table.setItem(row, 0, QTableWidgetItem(str(invoice.id)))
+            self.invoice_table.setItem(row, 1, QTableWidgetItem(invoice.customer_name))
+            self.invoice_table.setItem(row, 2, QTableWidgetItem(invoice.current_date))
+            self.invoice_table.setItem(row, 3, QTableWidgetItem(str(invoice.grand_total)))
+
+            # Create a Details button
+            details_button = QPushButton("View Details")
+            details_button.clicked.connect(lambda _, i_id=invoice.id: self.show_invoice_details(i_id))
+            self.invoice_table.setCellWidget(row, 4, details_button)
+
+        self.invoice_table.setSizeAdjustPolicy(QTableWidget.AdjustToContents)
+        self.invoice_table.horizontalHeader().setStretchLastSection(True)
+        self.invoice_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+    def show_invoice_details(self, invoice_id):
+        QMessageBox.information(self, "Invoice Details", f"Details for Invoice ID: {invoice_id}")
