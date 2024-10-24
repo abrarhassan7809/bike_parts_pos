@@ -3,3 +3,6 @@ venv
 .idea
 __pycache__
 pos_system.db
+main.spec
+build
+dist
