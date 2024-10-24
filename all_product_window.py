@@ -27,24 +27,27 @@ class AllProductWindow(QWidget):
         self.table_widget.setRowCount(len(products))
         self.table_widget.setColumnCount(7)
         self.table_widget.setHorizontalHeaderLabels(
-            ['Name', 'Barcode', 'Purchase Price', 'Sell Price', 'Quantity', 'Update', 'Remove'])
+            ['Name', 'Brand', 'Company', 'Rank Number', 'Barcode', 'Purchase Price', 'Sell Price', 'Quantity', 'Update', 'Remove'])
 
         for row, product in enumerate(products):
             self.table_widget.setItem(row, 0, QTableWidgetItem(product.name))
-            self.table_widget.setItem(row, 1, QTableWidgetItem(product.barcode))
-            self.table_widget.setItem(row, 2, QTableWidgetItem(str(product.pur_price)))
-            self.table_widget.setItem(row, 3, QTableWidgetItem(str(product.sel_price)))
-            self.table_widget.setItem(row, 4, QTableWidgetItem(str(product.quantity)))
+            self.table_widget.setItem(row, 1, QTableWidgetItem(product.brand))
+            self.table_widget.setItem(row, 2, QTableWidgetItem(product.company))
+            self.table_widget.setItem(row, 3, QTableWidgetItem(product.rank_number))
+            self.table_widget.setItem(row, 4, QTableWidgetItem(product.barcode))
+            self.table_widget.setItem(row, 5, QTableWidgetItem(str(product.pur_price)))
+            self.table_widget.setItem(row, 6, QTableWidgetItem(str(product.sel_price)))
+            self.table_widget.setItem(row, 7, QTableWidgetItem(str(product.quantity)))
 
             # Create Edit button
             edit_button = QPushButton("Edit")
             edit_button.clicked.connect(lambda _, b=product.barcode: self.show_update_tab(b))
-            self.table_widget.setCellWidget(row, 5, edit_button)
+            self.table_widget.setCellWidget(row, 8, edit_button)
 
             # Create Delete button
             delete_button = QPushButton("Delete")
             delete_button.clicked.connect(lambda _, p_id=product.id: self.delete_product(p_id))
-            self.table_widget.setCellWidget(row, 6, delete_button)
+            self.table_widget.setCellWidget(row, 9, delete_button)
 
         self.table_widget.setSizeAdjustPolicy(QTableWidget.AdjustToContents)
         self.table_widget.horizontalHeader().setStretchLastSection(True)
@@ -62,11 +65,14 @@ class AllProductWindow(QWidget):
         dialog = UpdateProductDialog(self, barcode)
         if dialog.exec() == QMessageBox.Accepted:
             product_data = dialog.get_product_data()
-            barcode, name, pur_price, sel_price, quantity = (
-                product_data['barcode'],
+            name, barcode, brand, company, rank_number, pur_price, sel_price, quantity = (
                 product_data['name'],
-                product_data['pur_price'],
-                product_data['sel_price'],
+                product_data['barcode'],
+                product_data['brand'],
+                product_data['company'],
+                product_data['rank_number'],
+                product_data['pur_price_input'],
+                product_data['sel_price_input'],
                 product_data['quantity']
             )
             if barcode and name and pur_price and sel_price and quantity:

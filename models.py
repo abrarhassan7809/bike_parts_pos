@@ -8,11 +8,14 @@ class Product(Base):
     __tablename__ = 'products'
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    barcode = Column(String, nullable=False)
-    pur_price = Column(Float, nullable=False)
+    name = Column(String, nullable=True)
+    barcode = Column(String, nullable=True)
+    brand = Column(String, nullable=True)
+    company = Column(String, nullable=True)
+    rank_number = Column(String, nullable=True)
+    pur_price = Column(Float, nullable=True)
     sel_price = Column(Float, nullable=False)
-    quantity = Column(Integer, nullable=False)
+    quantity = Column(Integer, default=1, nullable=True)
 
 
 class Invoice(Base):

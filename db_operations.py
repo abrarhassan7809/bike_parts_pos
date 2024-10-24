@@ -3,17 +3,25 @@ from models import Product, Invoice, InvoiceItem
 from db import SessionLocal
 session = SessionLocal()
 
-def insert_product(name, barcode, pur_price, sel_price, quantity):
-    product = Product(name=name, barcode=barcode, pur_price=pur_price, sel_price=sel_price, quantity=quantity)
+def insert_product(name, barcode, brand, company, rank_number, pur_price, sel_price, quantity):
+    product = Product(name=name, barcode=barcode, brand=brand, company=company, rank_number=rank_number,
+                      pur_price=pur_price, sel_price=sel_price, quantity=quantity)
     session.add(product)
     session.commit()
 
-def update_product(product_id, name=None, barcode=None, pur_price=None, sel_price=None, quantity=None):
+def update_product(product_id, name=None, barcode=None, brand=None, company=None, rank_number=None, pur_price=None,
+                   sel_price=None, quantity=None):
     product = session.query(Product).filter_by(id=product_id).first()
     if name:
         product.name = name
     if barcode:
         product.barcode = barcode
+    if brand:
+        product.brand = brand
+    if company:
+        product.company = company
+    if rank_number:
+        product.rank_number = rank_number
     if pur_price:
         product.pur_price = pur_price
     if sel_price:
@@ -77,12 +85,3 @@ def insert_invoice(invoice_data):
     # Save the invoice to the database
     session.add(invoice)
     session.commit()
-
-def get_invoice_details(invoice_id):
-    invoice_details = {
-        'items': [
-            {'product_name': 'Product A', 'quantity': 2, 'sell_price': 50.0, 'total_price': 100.0},
-            {'product_name': 'Product B', 'quantity': 1, 'sell_price': 30.0, 'total_price': 30.0}
-        ]
-    }
-    return invoice_details
