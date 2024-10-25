@@ -2,14 +2,20 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QMainWindow, QToolBar, QComboBox, QMessageBox, QDialog, QTableWidget,
                                QTableWidgetItem, QHeaderView, QPushButton, QLineEdit, QWidget, QSizePolicy)
-from all_product_window import AllProductWindow
-from insert_product_window import InsertProductDialog
-from create_invoice_window import CreateInvoiceWindow
-from invoices_window import InvoicesWindow
-from update_product_window import UpdateProductDialog
+
+from add_data_windows.insert_customer_window import InsertCustomerDialog
+from add_data_windows.insert_supplier_window import InsertSupplierDialog
+from show_data_windows.all_product_window import AllProductWindow
+from add_data_windows.insert_product_window import InsertProductDialog
+from show_data_windows.create_invoice_window import CreateInvoiceWindow
+from show_data_windows.customer_window import CustomerWindow
+from show_data_windows.invoices_window import InvoicesWindow
+from add_data_windows.update_product_window import UpdateProductDialog
+from show_data_windows.supplier_window import SupplierWindow
 from tab_manager import TabManager
-from db_operations import (insert_product, update_product, delete_product, get_all_products, get_product_by_barcode,
-                           get_all_invoices, get_invoice_by_id)
+from db_config.db_operations import (insert_product, update_product, delete_product, get_all_products,
+                                     get_product_by_barcode,
+                                     get_all_invoices, get_invoice_by_id, insert_supplier, insert_customer)
 
 
 class MainWindow(QMainWindow):
@@ -32,17 +38,19 @@ class MainWindow(QMainWindow):
         self.addToolBar(toolbar)
 
         # Add dropdown menu
-        dropdown = QComboBox(self)
-        dropdown.addItems(["Select Options", "All Products", "Incoices"])
-        dropdown.setStyleSheet(self.button_style)
-        dropdown.setItemData(0, False, Qt.UserRole - 1)
-        dropdown.currentIndexChanged.connect(self.on_dropdown_change)
-        toolbar.addWidget(dropdown)
+        tab_dropdown = QComboBox(self)
+        tab_dropdown.addItems(["Select Window", "Show Products", "Show Customers", "Show Suppliers", "Show Invoices",])
+        tab_dropdown.setStyleSheet(self.button_style)
+        tab_dropdown.setItemData(0, False, Qt.UserRole - 1)
+        tab_dropdown.currentIndexChanged.connect(self.select_dropdown_window)
+        toolbar.addWidget(tab_dropdown)
 
-        add_product_window = QPushButton("Add Product", self)
-        add_product_window.setStyleSheet(self.button_style)
-        add_product_window.clicked.connect(lambda: self.show_insert_tab())
-        toolbar.addWidget(add_product_window)
+        tab_dropdown = QComboBox(self)
+        tab_dropdown.addItems(["Select Operations", "Add Product", "Add Customer", "Add Supplier",])
+        tab_dropdown.setStyleSheet(self.button_style)
+        tab_dropdown.setItemData(0, False, Qt.UserRole - 1)
+        tab_dropdown.currentIndexChanged.connect(self.select_dropdown_operation)
+        toolbar.addWidget(tab_dropdown)
 
         update_product_window = QPushButton("Update Product", self)
         update_product_window.setStyleSheet(self.button_style)
@@ -76,13 +84,27 @@ class MainWindow(QMainWindow):
         self.all_invoices = get_all_invoices()
         self.show_invoices_tab()
 
-    def on_dropdown_change(self, index):
+    def select_dropdown_window(self, index):
         if index == 0:
             return
         elif index == 1:
             self.show_all_products_tab()
         elif index == 2:
+            self.show_customer_tab()
+        elif index == 3:
+            self.show_supplier_tab()
+        elif index == 4:
             self.show_invoices_tab()
+
+    def select_dropdown_operation(self, index):
+        if index == 0:
+            return
+        elif index == 1:
+            self.add_product_dialog()
+        elif index == 2:
+            self.add_customer_dialog()
+        elif index == 3:
+            self.add_supplier_dialog()
 
     def show_all_products_tab(self):
         for index in range(self.tab_manager.count()):
@@ -192,22 +214,12 @@ class MainWindow(QMainWindow):
         else:
             QMessageBox.warning(self, "Error", "Invoice details not found.")
 
-    def show_insert_tab(self):
+    def add_product_dialog(self):
         dialog = InsertProductDialog(self)
         if dialog.exec() == QDialog.Accepted:
             product_data = dialog.get_product_data()
-            name, barcode, brand, company, rank_number, pur_price, sel_price, quantity = (
-                product_data['name'],
-                product_data['barcode'],
-                product_data['brand'],
-                product_data['company'],
-                product_data['rank_number'],
-                product_data['pur_price_input'],
-                product_data['sel_price_input'],
-                product_data['quantity']
-            )
-            if name and barcode and pur_price and sel_price and quantity:
-                insert_product(name, barcode, brand, company, rank_number, pur_price, sel_price, quantity)
+            if product_data:
+                insert_product(**product_data)
                 QMessageBox.information(self, "Success", "Product inserted successfully!")
 
                 self.load_all_products()
@@ -219,20 +231,10 @@ class MainWindow(QMainWindow):
         dialog = UpdateProductDialog(self, barcode)
         if dialog.exec() == QDialog.Accepted:
             product_data = dialog.get_product_data()
-            name, barcode, brand, company, rank_number, pur_price, sel_price, quantity = (
-                product_data['name'],
-                product_data['barcode'],
-                product_data['brand'],
-                product_data['company'],
-                product_data['rank_number'],
-                product_data['pur_price_input'],
-                product_data['sel_price_input'],
-                product_data['quantity']
-            )
-            if barcode and name and pur_price and sel_price and quantity:
+            if product_data:
                 existing_product = get_product_by_barcode(barcode)
                 if existing_product:
-                    update_product(existing_product.id, name, barcode, brand, company, rank_number, pur_price, sel_price, quantity)
+                    update_product(**product_data)
                     QMessageBox.information(self, "Success", "Product updated successfully!")
 
                     self.load_all_products()
@@ -241,6 +243,44 @@ class MainWindow(QMainWindow):
                     QMessageBox.warning(self, "Error", "No product found with the provided barcode.")
             else:
                 QMessageBox.warning(self, "Error", "Please fill in all fields.")
+
+    def add_supplier_dialog(self):
+        dialog = InsertSupplierDialog(self)
+        if dialog.exec() == QDialog.Accepted:
+            supplier_data = dialog.get_supplier_data()
+            if all(supplier_data.values()):
+                insert_supplier(**supplier_data)
+                QMessageBox.information(self, "Success", "Supplier added successfully!")
+            else:
+                QMessageBox.warning(self, "Error", "Please fill in all fields.")
+
+    def show_supplier_tab(self):
+        for index in range(self.tab_manager.count()):
+            if self.tab_manager.tabText(index) == "Supplier":
+                self.tab_manager.setCurrentIndex(index)
+                return
+
+        supplier_tab = SupplierWindow(self)
+        self.tab_manager.add_new_tab("Supplier", supplier_tab)
+
+    def add_customer_dialog(self):
+        dialog = InsertCustomerDialog(self)
+        if dialog.exec() == QDialog.Accepted:
+            customer_data = dialog.get_customer_data()
+            if all(customer_data.values()):
+                insert_customer(**customer_data)
+                QMessageBox.information(self, "Success", "Customer added successfully!")
+            else:
+                QMessageBox.warning(self, "Error", "Please fill in all fields.")
+
+    def show_customer_tab(self):
+        for index in range(self.tab_manager.count()):
+            if self.tab_manager.tabText(index) == "Customer":
+                self.tab_manager.setCurrentIndex(index)
+                return
+
+        customer_tab = CustomerWindow(self)
+        self.tab_manager.add_new_tab("Customer", customer_tab)
 
     def delete_product(self, product_id):
         response = QMessageBox.question(self, "Confirm Delete",

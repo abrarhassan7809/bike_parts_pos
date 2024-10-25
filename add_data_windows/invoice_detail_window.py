@@ -1,6 +1,6 @@
 # invoice_detail_window.py
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem, QLabel
-from db_operations import get_invoice_by_id
+from db_config.db_operations import get_invoice_by_id
 
 
 class InvoiceDetailWindow(QDialog):

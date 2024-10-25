@@ -1,7 +1,7 @@
 #main.py
 from PySide6.QtWidgets import QApplication
-from main_window import MainWindow
-from db import engine, Base
+from show_data_windows.main_window import MainWindow
+from db_config.db import engine, Base
 import sys
 
 def main():

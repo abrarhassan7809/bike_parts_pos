@@ -1,6 +1,6 @@
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config
-import models
+from db_config import models
 from sqlalchemy import pool
 from alembic import context
 

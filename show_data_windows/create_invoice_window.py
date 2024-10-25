@@ -1,7 +1,7 @@
 #create_invoice_window.py
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QLineEdit, QTableWidget, QPushButton,
                                QMessageBox, QTableWidgetItem, QGridLayout, QHBoxLayout, QHeaderView)
-from db_operations import insert_invoice, get_product_by_barcode, get_product_by_name
+from db_config.db_operations import insert_invoice, get_product_by_barcode, get_product_by_name
 from datetime import datetime
 
 

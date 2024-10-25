@@ -1,7 +1,7 @@
 # all_product_window.py
 from PySide6.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QPushButton, QVBoxLayout, QHeaderView
-from db_operations import get_all_products, delete_product, update_product, get_product_by_barcode
-from update_product_window import UpdateProductDialog
+from db_config.db_operations import get_all_products, delete_product, update_product, get_product_by_barcode
+from add_data_windows.update_product_window import UpdateProductDialog
 from PySide6.QtWidgets import QMessageBox
 
 

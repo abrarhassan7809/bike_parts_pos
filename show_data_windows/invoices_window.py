@@ -1,7 +1,7 @@
 #invoice_window.py
 from PySide6.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QPushButton, QVBoxLayout, QHeaderView
-from db_operations import get_all_invoices
-from invoice_detail_window import InvoiceDetailWindow
+from db_config.db_operations import get_all_invoices
+from add_data_windows.invoice_detail_window import InvoiceDetailWindow
 
 
 class InvoicesWindow(QWidget):

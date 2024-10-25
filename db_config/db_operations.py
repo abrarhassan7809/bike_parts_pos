@@ -1,11 +1,11 @@
 # db_operations.py
-from models import Product, Invoice, InvoiceItem
-from db import SessionLocal
+from db_config.models import Product, Invoice, InvoiceItem, Supplier, Customer
+from db_config.db import SessionLocal
 session = SessionLocal()
 
-def insert_product(name, barcode, brand, company, rank_number, pur_price, sel_price, quantity):
+def insert_product(name, barcode, brand, company, rank_number, pur_price, sel_price, quantity, current_date):
     product = Product(name=name, barcode=barcode, brand=brand, company=company, rank_number=rank_number,
-                      pur_price=pur_price, sel_price=sel_price, quantity=quantity)
+                      pur_price=pur_price, sel_price=sel_price, quantity=quantity, current_date=current_date)
     session.add(product)
     session.commit()
 
@@ -49,6 +49,23 @@ def get_invoice_by_id(invoice_id):
         invoice.invoice_with_item = session.query(InvoiceItem).filter_by(invoice_id=invoice_id).all()
     return invoice
 
+def insert_supplier(name, company, phone_num, email, address):
+    supplier = Supplier(name=name, company=company, phon_num=phone_num, email=email, address=address)
+    session.add(supplier)
+    session.commit()
+
+def insert_customer(name, company, phone_num, email, city, address):
+    customer = Customer(name=name, company=company, phone_num=phone_num, email=email, city=city, address=address)
+    session.add(customer)
+    session.commit()
+
+def get_all_suppliers():
+    suppliers = session.query(Supplier).all()
+    return suppliers
+
+def get_all_customers():
+    customers = session.query(Customer).all()
+    return customers
 
 def get_product_by_barcode(barcode):
     products = session.query(Product).filter_by(barcode=barcode).first()
