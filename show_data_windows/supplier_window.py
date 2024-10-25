@@ -1,4 +1,4 @@
-# show_data_windows/supplier_window.py
+#show_data_windows/supplier_window.py
 from PySide6.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QHeaderView
 from db_config.db_operations import get_all_suppliers
 
@@ -17,14 +17,13 @@ class SupplierWindow(QWidget):
         suppliers = get_all_suppliers()
         self.table_widget.setRowCount(len(suppliers))
         self.table_widget.setColumnCount(4)
-        self.table_widget.setHorizontalHeaderLabels(['ID', 'Name', 'Contact', 'Email'])
+        self.table_widget.setHorizontalHeaderLabels(['Name', 'Company', 'Contact', 'Email', 'Address'])
 
         for row, supplier in enumerate(suppliers):
-            self.table_widget.setItem(row, 0, QTableWidgetItem(str(supplier.id)))
-            self.table_widget.setItem(row, 1, QTableWidgetItem(supplier.name))
-            self.table_widget.setItem(row, 2, QTableWidgetItem(supplier.company))
-            self.table_widget.setItem(row, 3, QTableWidgetItem(supplier.phon_num))
+            self.table_widget.setItem(row, 0, QTableWidgetItem(supplier.name))
+            self.table_widget.setItem(row, 1, QTableWidgetItem(supplier.company))
+            self.table_widget.setItem(row, 2, QTableWidgetItem(supplier.phone_num))
             self.table_widget.setItem(row, 3, QTableWidgetItem(supplier.email))
-            self.table_widget.setItem(row, 3, QTableWidgetItem(supplier.address))
+            self.table_widget.setItem(row, 4, QTableWidgetItem(supplier.address))
 
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)

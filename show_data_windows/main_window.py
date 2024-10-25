@@ -1,8 +1,7 @@
-# main_window.py
+#show_data_windows/main_window.py
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QMainWindow, QToolBar, QComboBox, QMessageBox, QDialog, QTableWidget,
                                QTableWidgetItem, QHeaderView, QPushButton, QLineEdit, QWidget, QSizePolicy)
-
 from add_data_windows.insert_customer_window import InsertCustomerDialog
 from add_data_windows.insert_supplier_window import InsertSupplierDialog
 from show_data_windows.all_product_window import AllProductWindow
@@ -13,9 +12,9 @@ from show_data_windows.invoices_window import InvoicesWindow
 from add_data_windows.update_product_window import UpdateProductDialog
 from show_data_windows.supplier_window import SupplierWindow
 from tab_manager import TabManager
-from db_config.db_operations import (insert_product, update_product, delete_product, get_all_products,
-                                     get_product_by_barcode,
-                                     get_all_invoices, get_invoice_by_id, insert_supplier, insert_customer)
+from db_config.db_operations import (update_product, delete_product, get_all_products, get_product_by_barcode,
+                                     get_all_invoices, get_invoice_by_id, insert_supplier, insert_customer,
+                                     insert_or_update_product)
 
 
 class MainWindow(QMainWindow):
@@ -96,6 +95,10 @@ class MainWindow(QMainWindow):
         elif index == 4:
             self.show_invoices_tab()
 
+        sender = self.sender()
+        if isinstance(sender, QComboBox):
+            sender.setCurrentIndex(0)
+
     def select_dropdown_operation(self, index):
         if index == 0:
             return
@@ -105,6 +108,10 @@ class MainWindow(QMainWindow):
             self.add_customer_dialog()
         elif index == 3:
             self.add_supplier_dialog()
+
+        sender = self.sender()
+        if isinstance(sender, QComboBox):
+            sender.setCurrentIndex(0)
 
     def show_all_products_tab(self):
         for index in range(self.tab_manager.count()):
@@ -168,30 +175,6 @@ class MainWindow(QMainWindow):
             table_widget.horizontalHeader().setStretchLastSection(True)
             table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-    def update_invoice_table(self, invoices):
-        invoices_tab = self.findChild(InvoicesWindow)
-        if invoices_tab:
-            invoice_table = invoices_tab.invoice_table
-            invoice_table.setRowCount(len(invoices))
-            invoice_table.setColumnCount(5)
-            invoice_table.setHorizontalHeaderLabels(
-                ['Invoice ID', 'Customer Name', 'Date', 'Total Amount', 'Details'])
-
-            for row, invoice in enumerate(invoices):
-                invoice_table.setItem(row, 0, QTableWidgetItem(str(invoice.id)))
-                invoice_table.setItem(row, 1, QTableWidgetItem(invoice.customer_name))
-                invoice_table.setItem(row, 2, QTableWidgetItem(invoice.date))
-                invoice_table.setItem(row, 3, QTableWidgetItem(str(invoice.total_amount)))
-
-                # Create a Details button
-                details_button = QPushButton("View Details")
-                details_button.clicked.connect(lambda _, i_id=invoice.id: self.show_invoice_details(i_id))
-                invoice_table.setCellWidget(row, 4, details_button)
-
-            invoice_table.setSizeAdjustPolicy(QTableWidget.AdjustToContents)
-            invoice_table.horizontalHeader().setStretchLastSection(True)
-            invoice_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
     def filter_products(self):
         search_text = self.search_bar.text().strip()
         filtered_products = []
@@ -219,8 +202,8 @@ class MainWindow(QMainWindow):
         if dialog.exec() == QDialog.Accepted:
             product_data = dialog.get_product_data()
             if product_data:
-                insert_product(**product_data)
-                QMessageBox.information(self, "Success", "Product inserted successfully!")
+                message = insert_or_update_product(product_data)
+                QMessageBox.information(self, "Success", f"{message}")
 
                 self.load_all_products()
                 self.update_product_table(self.all_products)
@@ -251,6 +234,12 @@ class MainWindow(QMainWindow):
             if all(supplier_data.values()):
                 insert_supplier(**supplier_data)
                 QMessageBox.information(self, "Success", "Supplier added successfully!")
+
+                for index in range(self.tab_manager.count()):
+                    widget = self.tab_manager.widget(index)
+                    if isinstance(widget, SupplierWindow) and self.tab_manager.tabText(index) == "Supplier":
+                        widget.load_suppliers()
+                        break
             else:
                 QMessageBox.warning(self, "Error", "Please fill in all fields.")
 
@@ -270,6 +259,12 @@ class MainWindow(QMainWindow):
             if all(customer_data.values()):
                 insert_customer(**customer_data)
                 QMessageBox.information(self, "Success", "Customer added successfully!")
+
+                for index in range(self.tab_manager.count()):
+                    widget = self.tab_manager.widget(index)
+                    if isinstance(widget, CustomerWindow) and self.tab_manager.tabText(index) == "Customer":
+                        widget.load_customers()
+                        break
             else:
                 QMessageBox.warning(self, "Error", "Please fill in all fields.")
 

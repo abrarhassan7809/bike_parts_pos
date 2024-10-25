@@ -1,7 +1,7 @@
-#create_invoice_window.py
+#show_data_windows/create_invoice_window.py
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QLineEdit, QTableWidget, QPushButton,
-                               QMessageBox, QTableWidgetItem, QGridLayout, QHBoxLayout, QHeaderView)
-from db_config.db_operations import insert_invoice, get_product_by_barcode, get_product_by_name
+                               QMessageBox, QTableWidgetItem, QGridLayout, QHBoxLayout, QHeaderView, QComboBox)
+from db_config.db_operations import insert_invoice, get_product_by_barcode, get_product_by_name, get_all_customers
 from datetime import datetime
 
 
@@ -9,46 +9,53 @@ class CreateInvoiceWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.init_ui()
+        self.load_customers()
 
     def init_ui(self):
         main_layout = QVBoxLayout(self)
         grid_layout = QGridLayout()
 
         # Add form fields for customer and invoice details
-        self.customer_name_input = QLineEdit(self)
-        self.customer_name_input.setPlaceholderText("Customer Name")
+        self.customer_name_input = QComboBox(self)
+        self.customer_name_input.setPlaceholderText("Select Customer")
 
         self.product_name_input = QLineEdit(self)
         self.product_name_input.setPlaceholderText("Product Name")
         self.product_name_input.textChanged.connect(self.auto_fill_product_data_by_name_real_time)
 
+        self.grand_total_input = QLineEdit(self)
+        self.grand_total_input.setPlaceholderText("Grand Total")
+        self.grand_total_input.setReadOnly(True)
+
         self.barcode_input = QLineEdit(self)
         self.barcode_input.setPlaceholderText("Product Barcode")
         self.barcode_input.textChanged.connect(self.auto_fill_product_data_by_barcode_real_time)
 
-        self.price_input = QLineEdit(self)
-        self.price_input.setPlaceholderText("Product Price")
-        self.price_input.textChanged.connect(self.update_total_price)
-
-        self.quantity_input = QLineEdit(self)
-        self.quantity_input.setPlaceholderText("Quantity")
-        self.quantity_input.textChanged.connect(self.update_total_price)
-
-        self.total_input = QLineEdit(self)
-        self.total_input.setPlaceholderText("Total")
-        self.total_input.setReadOnly(True)
+        self.company_input = QLineEdit(self)
+        self.company_input.setPlaceholderText("Company")
 
         self.discount_input = QLineEdit(self)
         self.discount_input.setPlaceholderText("Discount")
         self.discount_input.textChanged.connect(self.update_remaining_amount)
 
+        self.brand_input = QLineEdit(self)
+        self.brand_input.setPlaceholderText("Brand")
+
+        self.quantity_input = QLineEdit(self)
+        self.quantity_input.setPlaceholderText("Quantity")
+        self.quantity_input.textChanged.connect(self.update_total_price)
+
         self.receiving_amount_input = QLineEdit(self)
         self.receiving_amount_input.setPlaceholderText("Receiving Amount")
         self.receiving_amount_input.textChanged.connect(self.update_remaining_amount)
 
-        self.grand_total_input = QLineEdit(self)
-        self.grand_total_input.setPlaceholderText("Grand Total")
-        self.grand_total_input.setReadOnly(True)
+        self.price_input = QLineEdit(self)
+        self.price_input.setPlaceholderText("Product Price")
+        self.price_input.textChanged.connect(self.update_total_price)
+
+        self.total_input = QLineEdit(self)
+        self.total_input.setPlaceholderText("Total")
+        self.total_input.setReadOnly(True)
 
         self.remaining_amount_input = QLineEdit(self)
         self.remaining_amount_input.setPlaceholderText("Remaining Amount")
@@ -56,8 +63,8 @@ class CreateInvoiceWindow(QWidget):
 
         # Add a table for product selection
         self.products_input = QTableWidget(self)
-        self.products_input.setColumnCount(5)  # Add extra column for 'Remove' button
-        self.products_input.setHorizontalHeaderLabels(['Product', 'Quantity', 'Price', 'Total', 'Remove'])
+        self.products_input.setColumnCount(7)
+        self.products_input.setHorizontalHeaderLabels(['Product', 'Brand', 'Company', 'Quantity', 'Price', 'Total', 'Remove'])
 
         # Stretch columns evenly across the table width
         header = self.products_input.horizontalHeader()
@@ -81,29 +88,35 @@ class CreateInvoiceWindow(QWidget):
         grid_layout.addWidget(QLabel("Product Name:"), 0, 2)
         grid_layout.addWidget(self.product_name_input, 0, 3)
 
-        grid_layout.addWidget(QLabel("Barcode:"), 0, 4)
-        grid_layout.addWidget(self.barcode_input, 0, 5)
+        grid_layout.addWidget(QLabel("Grand Total:"), 0, 4)
+        grid_layout.addWidget(self.grand_total_input, 0, 5)
 
-        grid_layout.addWidget(QLabel("Product Price:"), 1, 0)
-        grid_layout.addWidget(self.price_input, 1, 1)
+        grid_layout.addWidget(QLabel("Barcode:"), 1, 0)
+        grid_layout.addWidget(self.barcode_input, 1, 1)
 
-        grid_layout.addWidget(QLabel("Quantity:"), 1, 2)
-        grid_layout.addWidget(self.quantity_input, 1, 3)
+        grid_layout.addWidget(QLabel("Company:"), 1, 2)
+        grid_layout.addWidget(self.company_input, 1, 3)
 
-        grid_layout.addWidget(QLabel("Total:"), 1, 4)
-        grid_layout.addWidget(self.total_input, 1, 5)
+        grid_layout.addWidget(QLabel("Discount:"), 1, 4)
+        grid_layout.addWidget(self.discount_input, 1, 5)
 
-        grid_layout.addWidget(QLabel("Grand Total:"), 2, 0)
-        grid_layout.addWidget(self.grand_total_input, 2, 1)
+        grid_layout.addWidget(QLabel("Brand:"), 2, 0)
+        grid_layout.addWidget(self.brand_input, 2, 1)
 
-        grid_layout.addWidget(QLabel("Discount:"), 2, 2)
-        grid_layout.addWidget(self.discount_input, 2, 3)
+        grid_layout.addWidget(QLabel("Quantity:"), 2, 2)
+        grid_layout.addWidget(self.quantity_input, 2, 3)
 
         grid_layout.addWidget(QLabel("Receiving Amount:"), 2, 4)
         grid_layout.addWidget(self.receiving_amount_input, 2, 5)
 
-        grid_layout.addWidget(QLabel("Remaining Amount:"), 3, 0)
-        grid_layout.addWidget(self.remaining_amount_input, 3, 1)
+        grid_layout.addWidget(QLabel("Product Price:"), 3, 0)
+        grid_layout.addWidget(self.price_input, 3, 1)
+
+        grid_layout.addWidget(QLabel("Total:"), 3, 2)
+        grid_layout.addWidget(self.total_input, 3, 3)
+
+        grid_layout.addWidget(QLabel("Remaining Amount:"), 3, 4)
+        grid_layout.addWidget(self.remaining_amount_input, 3, 5)
 
         # Add inputs to the main layout
         main_layout.addLayout(grid_layout)
@@ -115,10 +128,16 @@ class CreateInvoiceWindow(QWidget):
         button_layout.addStretch()
         button_layout.addWidget(self.add_item_btn)
         button_layout.addWidget(self.create_btn)
-        button_layout.addWidget(self.clear_btn)  # Add Clear button
+        button_layout.addWidget(self.clear_btn)
 
         # Add button layout to the main layout
         main_layout.addLayout(button_layout)
+
+    def load_customers(self):
+        customers = get_all_customers()
+        self.customer_name_input.clear()
+        for customer in customers:
+            self.customer_name_input.addItem(customer.name, customer)
 
     def auto_fill_product_data_by_barcode_real_time(self):
         barcode = self.barcode_input.text().strip()
@@ -126,6 +145,8 @@ class CreateInvoiceWindow(QWidget):
             product = get_product_by_barcode(barcode)
             if product:
                 self.product_name_input.setText(product.name)
+                self.brand_input.setText(product.brand)
+                self.company_input.setText(product.company)
                 self.price_input.setText(str(product.sel_price))
                 self.quantity_input.setText("1")
                 self.update_total_price()
@@ -136,13 +157,14 @@ class CreateInvoiceWindow(QWidget):
             product = get_product_by_name(product_name)
             if product:
                 self.product_name_input.setText(product.name)
+                self.brand_input.setText(product.brand)
+                self.company_input.setText(product.company)
                 self.price_input.setText(str(product.sel_price))
                 self.barcode_input.setText(product.barcode)
                 self.quantity_input.setText("1")
                 self.update_total_price()
 
     def add_item(self):
-        # Validate inputs before adding the item
         if not self.product_name_input.text() or not self.barcode_input.text():
             QMessageBox.warning(self, "Error", "Please fill in the product name or barcode.")
             return
@@ -155,14 +177,16 @@ class CreateInvoiceWindow(QWidget):
         quantity = int(self.quantity_input.text() or 0)
         total = price * quantity
         self.products_input.setItem(row_position, 0, QTableWidgetItem(self.product_name_input.text()))
-        self.products_input.setItem(row_position, 1, QTableWidgetItem(str(quantity)))
-        self.products_input.setItem(row_position, 2, QTableWidgetItem(str(price)))
-        self.products_input.setItem(row_position, 3, QTableWidgetItem(str(total)))
+        self.products_input.setItem(row_position, 1, QTableWidgetItem(self.brand_input.text()))
+        self.products_input.setItem(row_position, 2, QTableWidgetItem(self.company_input.text()))
+        self.products_input.setItem(row_position, 3, QTableWidgetItem(str(quantity)))
+        self.products_input.setItem(row_position, 4, QTableWidgetItem(str(price)))
+        self.products_input.setItem(row_position, 5, QTableWidgetItem(str(total)))
 
         # Create "Remove" button for each row
         remove_btn = QPushButton("Remove")
         remove_btn.clicked.connect(lambda: self.remove_item(row_position))
-        self.products_input.setCellWidget(row_position, 4, remove_btn)
+        self.products_input.setCellWidget(row_position, 6, remove_btn)
 
         # Update the grand total after adding the item
         self.update_grand_total()
@@ -176,7 +200,7 @@ class CreateInvoiceWindow(QWidget):
     def update_grand_total(self):
         grand_total = 0.0
         for row in range(self.products_input.rowCount()):
-            grand_total += float(self.products_input.item(row, 3).text())
+            grand_total += float(self.products_input.item(row, 5).text())
 
         self.grand_total_input.setText(str(grand_total))
 
@@ -198,6 +222,8 @@ class CreateInvoiceWindow(QWidget):
     def clear_invoice(self):
         self.customer_name_input.clear()
         self.product_name_input.clear()
+        self.brand_input.clear()
+        self.company_input.clear()
         self.barcode_input.clear()
         self.price_input.clear()
         self.quantity_input.clear()
@@ -214,17 +240,21 @@ class CreateInvoiceWindow(QWidget):
         invoice_items = []
         for row in range(self.products_input.rowCount()):
             product_name = self.products_input.item(row, 0).text()
-            quantity = int(self.products_input.item(row, 1).text())
-            price = float(self.products_input.item(row, 2).text())
-            total = float(self.products_input.item(row, 3).text())
+            brand = self.products_input.item(row, 1).text()
+            company = self.products_input.item(row, 2).text()
+            quantity = int(self.products_input.item(row, 3).text())
+            price = float(self.products_input.item(row, 4).text())
+            total = float(self.products_input.item(row, 5).text())
             invoice_items.append({
                 'product_name': product_name,
+                'brand': brand,
+                'company': company,
                 'quantity': quantity,
                 'sell_price': price,
                 'total_price': total
             })
 
-        customer_name = self.customer_name_input.text()
+        customer_name = self.customer_name_input.currentText()
         invoice_date = datetime.today().strftime('%Y-%m-%d')
         grand_total = float(self.grand_total_input.text())
         discount = float(self.discount_input.text()) if self.discount_input.text() else 0.0

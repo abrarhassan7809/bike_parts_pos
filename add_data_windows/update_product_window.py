@@ -1,3 +1,4 @@
+#add_data_windows/update_product_window.py
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QLineEdit, QDoubleSpinBox, QSpinBox, QLabel, QPushButton,
                                QMessageBox, QHBoxLayout)
 from db_config.db_operations import get_product_by_barcode

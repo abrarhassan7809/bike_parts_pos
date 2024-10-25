@@ -16,16 +16,15 @@ class CustomerWindow(QWidget):
     def load_customers(self):
         customers = get_all_customers()
         self.table_widget.setRowCount(len(customers))
-        self.table_widget.setColumnCount(4)
-        self.table_widget.setHorizontalHeaderLabels(['ID', 'Name', 'Contact', 'Email'])
+        self.table_widget.setColumnCount(6)
+        self.table_widget.setHorizontalHeaderLabels(['Name', 'Company', 'Contact', 'Email', 'City', 'Address'])
 
         for row, customer in enumerate(customers):
-            self.table_widget.setItem(row, 0, QTableWidgetItem(str(customer.id)))
-            self.table_widget.setItem(row, 1, QTableWidgetItem(customer.name))
-            self.table_widget.setItem(row, 2, QTableWidgetItem(customer.company))
-            self.table_widget.setItem(row, 3, QTableWidgetItem(customer.phone_num))
+            self.table_widget.setItem(row, 0, QTableWidgetItem(customer.name))
+            self.table_widget.setItem(row, 1, QTableWidgetItem(customer.company))
+            self.table_widget.setItem(row, 2, QTableWidgetItem(customer.phone_num))
             self.table_widget.setItem(row, 3, QTableWidgetItem(customer.email))
-            self.table_widget.setItem(row, 3, QTableWidgetItem(customer.city))
-            self.table_widget.setItem(row, 3, QTableWidgetItem(customer.address))
+            self.table_widget.setItem(row, 4, QTableWidgetItem(customer.city))
+            self.table_widget.setItem(row, 5, QTableWidgetItem(customer.address))
 
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)

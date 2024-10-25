@@ -1,4 +1,4 @@
-#insert_customer_window.py
+#add_data_windows/insert_customer_window.py
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QLabel, QPushButton, QHBoxLayout, QMessageBox
 
 

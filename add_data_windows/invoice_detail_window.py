@@ -1,4 +1,4 @@
-# invoice_detail_window.py
+#add_data_windows/invoice_detail_window.py
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem, QLabel
 from db_config.db_operations import get_invoice_by_id
 
@@ -25,14 +25,16 @@ class InvoiceDetailWindow(QDialog):
         if invoice:
             # Set up the table for displaying invoice items
             self.table_widget.setRowCount(len(invoice.invoice_with_item))
-            self.table_widget.setColumnCount(4)
-            self.table_widget.setHorizontalHeaderLabels(['Product Name', 'Quantity', 'Sell Price', 'Total Price'])
+            self.table_widget.setColumnCount(6)
+            self.table_widget.setHorizontalHeaderLabels(['Product Name', 'Brand', 'Company', 'Quantity', 'Sell Price', 'Total Price'])
 
             for row, item in enumerate(invoice.invoice_with_item):
                 self.table_widget.setItem(row, 0, QTableWidgetItem(item.product_name))
-                self.table_widget.setItem(row, 1, QTableWidgetItem(str(item.quantity)))
-                self.table_widget.setItem(row, 2, QTableWidgetItem(str(item.sell_price)))
-                self.table_widget.setItem(row, 3, QTableWidgetItem(str(item.total_price)))
+                self.table_widget.setItem(row, 1, QTableWidgetItem(item.brand))
+                self.table_widget.setItem(row, 2, QTableWidgetItem(item.company))
+                self.table_widget.setItem(row, 3, QTableWidgetItem(str(item.quantity)))
+                self.table_widget.setItem(row, 4, QTableWidgetItem(str(item.sell_price)))
+                self.table_widget.setItem(row, 5, QTableWidgetItem(str(item.total_price)))
 
             self.table_widget.setSizeAdjustPolicy(QTableWidget.AdjustToContents)
             self.table_widget.horizontalHeader().setStretchLastSection(True)

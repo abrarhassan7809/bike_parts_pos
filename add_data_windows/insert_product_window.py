@@ -1,4 +1,4 @@
-# insert_product_dialog.py
+#add_data_windows/insert_product_dialog.py
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QLineEdit, QDoubleSpinBox, QSpinBox, QLabel, QPushButton,
                                QHBoxLayout, QMessageBox)
 from datetime import datetime

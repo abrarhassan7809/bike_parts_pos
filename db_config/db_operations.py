@@ -74,6 +74,24 @@ def get_product_by_barcode(barcode):
 def get_product_by_name(name):
     return session.query(Product).filter_by(name=name).first()
 
+def insert_or_update_product(data):
+    try:
+        existing_product = session.query(Product).filter_by(name=data['name'], brand=data['brand'],
+                                                            company=data['company']).first()
+
+        if existing_product:
+            existing_product.quantity += data['quantity']
+            existing_product.pur_price = data['pur_price']
+            existing_product.sel_price = data['sel_price']
+            session.commit()
+            return "Product updated successfully"
+        else:
+            insert_product(**data)
+            return "Product added successfully"
+    except Exception as e:
+        session.rollback()
+        return f"Error: {str(e)}"
+
 def insert_invoice(invoice_data):
     invoice = Invoice(
         customer_name=invoice_data['customer_name'],
@@ -84,10 +102,11 @@ def insert_invoice(invoice_data):
         remaining_amount=invoice_data['remaining_amount'],
     )
 
-    # Add related InvoiceItems
     for item in invoice_data['items']:
         invoice_item = InvoiceItem(
             product_name=item['product_name'],
+            brand=item['brand'],
+            company=item['company'],
             quantity=item['quantity'],
             sell_price=item['sell_price'],
             total_price=item['total_price'],
@@ -97,8 +116,13 @@ def insert_invoice(invoice_data):
         product = session.query(Product).filter_by(name=item['product_name']).first()
         if product:
             product.quantity -= item['quantity']
-            session.commit()
+            if product.quantity < 0:
+                product.quantity = 0
 
-    # Save the invoice to the database
-    session.add(invoice)
-    session.commit()
+    try:
+        session.add(invoice)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+    finally:
+        session.close()
