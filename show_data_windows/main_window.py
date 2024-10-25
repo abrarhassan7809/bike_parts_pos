@@ -1,20 +1,20 @@
 #show_data_windows/main_window.py
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QMainWindow, QToolBar, QComboBox, QMessageBox, QDialog, QTableWidget,
-                               QTableWidgetItem, QHeaderView, QPushButton, QLineEdit, QWidget, QSizePolicy)
+                               QTableWidgetItem, QHeaderView, QPushButton)
 from add_data_windows.insert_customer_window import InsertCustomerDialog
 from add_data_windows.insert_supplier_window import InsertSupplierDialog
 from show_data_windows.all_product_window import AllProductWindow
 from add_data_windows.insert_product_window import InsertProductDialog
 from show_data_windows.create_invoice_window import CreateInvoiceWindow
 from show_data_windows.customer_window import CustomerWindow
+from show_data_windows.dashboard_window import DashboardWindow
 from show_data_windows.invoices_window import InvoicesWindow
 from add_data_windows.update_product_window import UpdateProductDialog
 from show_data_windows.supplier_window import SupplierWindow
 from tab_manager import TabManager
 from db_config.db_operations import (update_product, delete_product, get_all_products, get_product_by_barcode,
-                                     get_all_invoices, get_invoice_by_id, insert_supplier, insert_customer,
-                                     insert_or_update_product)
+                                     get_invoice_by_id, insert_supplier, insert_customer, insert_or_update_product)
 
 
 class MainWindow(QMainWindow):
@@ -29,12 +29,16 @@ class MainWindow(QMainWindow):
 
         self.toolbar = self.create_toolbar()
         self.all_products = []
-        self.all_invoices = []
-        self.load_all_products()
+        self.load_dashboard_tab()
 
     def create_toolbar(self):
         toolbar = QToolBar("Operations")
         self.addToolBar(toolbar)
+
+        dashboard_button = QPushButton("Dashboard", self)
+        dashboard_button.setStyleSheet(self.button_style)
+        dashboard_button.clicked.connect(self.load_dashboard_tab)
+        toolbar.addWidget(dashboard_button)
 
         # Add dropdown menu
         tab_dropdown = QComboBox(self)
@@ -61,33 +65,27 @@ class MainWindow(QMainWindow):
         invoice_button.clicked.connect(lambda: self.create_invoice_tab())
         toolbar.addWidget(invoice_button)
 
-        spacer = QWidget()
-        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        toolbar.addWidget(spacer)
-
-        self.search_bar = QLineEdit(self)
-        self.search_bar.setFixedWidth(300)
-        self.search_bar.setPlaceholderText("Search Product...")
-        self.search_bar.setStyleSheet("background-color: #f0f0f0; color: #333;")
-        self.search_bar.textChanged.connect(self.filter_products)
-        toolbar.addWidget(self.search_bar)
-
         return toolbar
+
+    def load_dashboard_tab(self):
+        for index in range(self.tab_manager.count()):
+            if self.tab_manager.tabText(index) == "Dashboard":
+                self.tab_manager.setCurrentIndex(index)
+                return
+
+        dashboard_tab = DashboardWindow(self)
+        self.tab_manager.add_new_tab("Dashboard", dashboard_tab)
 
     def load_all_products(self):
         self.all_products = get_all_products()
         self.update_product_table(self.all_products)
         self.show_all_products_tab()
 
-    def load_all_invoices(self):
-        self.all_invoices = get_all_invoices()
-        self.show_invoices_tab()
-
     def select_dropdown_window(self, index):
         if index == 0:
             return
         elif index == 1:
-            self.show_all_products_tab()
+            self.load_all_products()
         elif index == 2:
             self.show_customer_tab()
         elif index == 3:
@@ -174,17 +172,6 @@ class MainWindow(QMainWindow):
             table_widget.setSizeAdjustPolicy(QTableWidget.AdjustToContents)
             table_widget.horizontalHeader().setStretchLastSection(True)
             table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
-    def filter_products(self):
-        search_text = self.search_bar.text().strip()
-        filtered_products = []
-        if search_text:
-            filtered_products = [product for product in self.all_products if
-                                 search_text in product.barcode or search_text.lower() in product.name.lower()]
-        else:
-            filtered_products = self.all_products
-
-        self.update_product_table(filtered_products)
 
     def show_invoice_details(self, invoice_id):
         invoice = get_invoice_by_id(invoice_id)

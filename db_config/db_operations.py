@@ -1,4 +1,8 @@
 # db_operations.py
+from datetime import datetime
+
+from sqlalchemy import func
+
 from db_config.models import Product, Invoice, InvoiceItem, Supplier, Customer
 from db_config.db import SessionLocal
 session = SessionLocal()
@@ -33,6 +37,16 @@ def update_product(product_id, name=None, barcode=None, brand=None, company=None
 def delete_product(product_id):
     product = session.query(Product).filter_by(id=product_id).first()
     session.delete(product)
+    session.commit()
+
+def delete_customer(customer_id):
+    customer = session.query(Customer).filter_by(id=customer_id).first()
+    session.delete(customer)
+    session.commit()
+
+def delete_supplier(supplier_id):
+    supplier = session.query(Supplier).filter_by(id=supplier_id).first()
+    session.delete(supplier)
     session.commit()
 
 def get_all_products():
@@ -126,3 +140,43 @@ def insert_invoice(invoice_data):
         session.rollback()
     finally:
         session.close()
+
+def get_daily_sales():
+    today = datetime.now().date()
+    sales = session.query(func.sum(Invoice.grand_total)).filter(func.date(Invoice.current_date) == today).scalar()
+    return sales if sales else 0
+
+def get_daily_profit():
+    today = datetime.now().date()
+    profit = 0
+
+    invoices = session.query(Invoice).filter(func.date(Invoice.current_date) == today).all()
+    for invoice in invoices:
+        invoice_profit = 0
+        for item in invoice.invoice_with_item:
+            product = session.query(Product).filter_by(name=item.product_name).first()
+            if product:
+                invoice_profit += (item.sell_price - product.pur_price) * item.quantity
+        profit += invoice_profit - invoice.discount
+
+    return profit
+
+def get_monthly_sales():
+    start_of_month = datetime.now().replace(day=1).date()
+    sales = session.query(func.sum(Invoice.grand_total)).filter(func.date(Invoice.current_date) >= start_of_month).scalar()
+    return sales if sales else 0
+
+def get_monthly_profit():
+    start_of_month = datetime.now().replace(day=1).date()
+    profit = 0
+
+    invoices = session.query(Invoice).filter(func.date(Invoice.current_date) >= start_of_month).all()
+    for invoice in invoices:
+        invoice_profit = 0
+        for item in invoice.invoice_with_item:
+            product = session.query(Product).filter_by(name=item.product_name).first()
+            if product:
+                invoice_profit += (item.sell_price - product.pur_price) * item.quantity
+        profit += invoice_profit - invoice.discount
+
+    return profit

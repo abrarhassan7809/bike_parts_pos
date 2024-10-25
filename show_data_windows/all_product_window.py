@@ -1,5 +1,6 @@
 #show_data_windows/all_product_window.py
-from PySide6.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QPushButton, QVBoxLayout, QHeaderView
+from PySide6.QtWidgets import (QWidget, QTableWidget, QTableWidgetItem, QPushButton, QVBoxLayout, QHeaderView,
+                               QLineEdit, QHBoxLayout, QSpacerItem, QSizePolicy)
 from db_config.db_operations import get_all_products, delete_product, update_product, get_product_by_barcode
 from add_data_windows.update_product_window import UpdateProductDialog
 from PySide6.QtWidgets import QMessageBox
@@ -10,10 +11,25 @@ class AllProductWindow(QWidget):
         super().__init__(parent)
         self.parent = parent
         self.all_products = []
+        self.filtered_products = []
         self.init_ui()
 
     def init_ui(self):
         self.layout = QVBoxLayout(self)
+
+        search_layout = QHBoxLayout()
+        self.search_data = QLineEdit(self)
+        self.search_data.setFixedWidth(300)
+        self.search_data.setStyleSheet("background-color: #f0f0f0; color: #333;")
+        self.search_data.setPlaceholderText("Search Product...")
+        self.search_data.textChanged.connect(self.filter_products)
+
+        search_layout.addWidget(self.search_data)
+
+        spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        search_layout.addItem(spacer)
+        self.layout.addLayout(search_layout)
+
         self.table_widget = QTableWidget(self)
         self.layout.addWidget(self.table_widget)
 
@@ -23,9 +39,22 @@ class AllProductWindow(QWidget):
         self.all_products = get_all_products()
         self.update_product_table(self.all_products)
 
+    def filter_products(self):
+        search_text = self.search_data.text().strip()
+
+        if search_text:
+            self.filtered_products = [
+                product for product in self.all_products
+                if search_text in product.barcode or search_text.lower() in product.name.lower()
+            ]
+        else:
+            self.filtered_products = self.all_products
+
+        self.update_product_table(self.filtered_products)
+
     def update_product_table(self, products):
         self.table_widget.setRowCount(len(products))
-        self.table_widget.setColumnCount(7)
+        self.table_widget.setColumnCount(10)
         self.table_widget.setHorizontalHeaderLabels(
             ['Name', 'Brand', 'Company', 'Rank Number', 'Barcode', 'Purchase Price', 'Sell Price', 'Quantity', 'Update', 'Remove'])
 

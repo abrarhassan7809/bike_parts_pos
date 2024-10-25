@@ -1,5 +1,6 @@
 #show_data_windows/invoice_window.py
-from PySide6.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QPushButton, QVBoxLayout, QHeaderView
+from PySide6.QtWidgets import (QWidget, QTableWidget, QTableWidgetItem, QPushButton, QVBoxLayout, QHeaderView,
+                               QLineEdit, QHBoxLayout, QSizePolicy, QSpacerItem)
 from db_config.db_operations import get_all_invoices
 from add_data_windows.invoice_detail_window import InvoiceDetailWindow
 
@@ -9,40 +10,65 @@ class InvoicesWindow(QWidget):
         super().__init__(parent)
         self.parent = parent
         self.all_invoices = []
+        self.filtered_invoices = []
         self.init_ui()
 
     def init_ui(self):
         self.layout = QVBoxLayout(self)
-        self.invoice_table = QTableWidget(self)
-        self.layout.addWidget(self.invoice_table)
+
+        # Create a search layout
+        search_layout = QHBoxLayout()
+        self.search_data = QLineEdit(self)
+        self.search_data.setFixedWidth(300)
+        self.search_data.setStyleSheet("background-color: #f0f0f0; color: #333;")
+        self.search_data.setPlaceholderText("Search invoices...")
+        self.search_data.textChanged.connect(self.filter_invoices)
+
+        search_layout.addWidget(self.search_data)
+
+        spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        search_layout.addItem(spacer)
+        self.layout.addLayout(search_layout)
+
+        self.table_widget = QTableWidget(self)
+        self.layout.addWidget(self.table_widget)
 
         self.load_all_invoices()
 
     def load_all_invoices(self):
         self.all_invoices = get_all_invoices()
-        self.update_invoice_table(self.all_invoices)
+        self.filtered_invoices = self.all_invoices
+        self.update_invoice_table(self.filtered_invoices)
+
+    def filter_invoices(self):
+        customer_text = self.search_data.text().strip().lower()
+
+        self.filtered_invoices = [invoice for invoice in self.all_invoices
+            if (customer_text in invoice.customer_name.lower()) or (customer_text in invoice.current_date)]
+
+        self.update_invoice_table(self.filtered_invoices)
 
     def update_invoice_table(self, invoices):
-        self.invoice_table.setRowCount(len(invoices))
-        self.invoice_table.setColumnCount(6)
-        self.invoice_table.setHorizontalHeaderLabels(
+        self.table_widget.setRowCount(len(invoices))
+        self.table_widget.setColumnCount(6)
+        self.table_widget.setHorizontalHeaderLabels(
             ['Date', 'Customer Name', 'Receiving Amount', 'Remaining Amount', 'Total Amount', 'Details'])
 
         for row, invoice in enumerate(invoices):
-            self.invoice_table.setItem(row, 0, QTableWidgetItem(invoice.current_date))
-            self.invoice_table.setItem(row, 1, QTableWidgetItem(invoice.customer_name))
-            self.invoice_table.setItem(row, 2, QTableWidgetItem(str(invoice.receiving_amount)))
-            self.invoice_table.setItem(row, 3, QTableWidgetItem(str(invoice.remaining_amount)))
-            self.invoice_table.setItem(row, 4, QTableWidgetItem(str(invoice.grand_total)))
+            self.table_widget.setItem(row, 0, QTableWidgetItem(invoice.current_date))
+            self.table_widget.setItem(row, 1, QTableWidgetItem(invoice.customer_name))
+            self.table_widget.setItem(row, 2, QTableWidgetItem(str(invoice.receiving_amount)))
+            self.table_widget.setItem(row, 3, QTableWidgetItem(str(invoice.remaining_amount)))
+            self.table_widget.setItem(row, 4, QTableWidgetItem(str(invoice.grand_total)))
 
             # Create a Details button
             details_button = QPushButton("View Details")
             details_button.clicked.connect(lambda _, i_id=invoice.id: self.show_invoice_details(i_id))
-            self.invoice_table.setCellWidget(row, 5, details_button)
+            self.table_widget.setCellWidget(row, 5, details_button)
 
-        self.invoice_table.setSizeAdjustPolicy(QTableWidget.AdjustToContents)
-        self.invoice_table.horizontalHeader().setStretchLastSection(True)
-        self.invoice_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table_widget.setSizeAdjustPolicy(QTableWidget.AdjustToContents)
+        self.table_widget.horizontalHeader().setStretchLastSection(True)
+        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
     def show_invoice_details(self, invoice_id):
         detail_window = InvoiceDetailWindow(invoice_id, self)
