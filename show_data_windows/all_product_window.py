@@ -1,4 +1,5 @@
 #show_data_windows/all_product_window.py
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (QWidget, QTableWidget, QTableWidgetItem, QPushButton, QVBoxLayout, QHeaderView,
                                QLineEdit, QHBoxLayout, QSpacerItem, QSizePolicy)
 from db_config.db_operations import get_all_products, delete_product, update_product, get_product_by_barcode
@@ -7,6 +8,7 @@ from PySide6.QtWidgets import QMessageBox
 
 
 class AllProductWindow(QWidget):
+    signal_created = Signal()
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent = parent
@@ -89,6 +91,7 @@ class AllProductWindow(QWidget):
         if response == QMessageBox.Yes:
             delete_product(product_id)
             self.load_all_products()
+            self.signal_created.emit()
 
     def show_update_tab(self, barcode=None):
         dialog = UpdateProductDialog(self, barcode)
@@ -100,8 +103,8 @@ class AllProductWindow(QWidget):
                 product_data['brand'],
                 product_data['company'],
                 product_data['rank_number'],
-                product_data['pur_price_input'],
-                product_data['sel_price_input'],
+                product_data['pur_price'],
+                product_data['sel_price'],
                 product_data['quantity']
             )
             if barcode and name and pur_price and sel_price and quantity:

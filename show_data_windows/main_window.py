@@ -1,7 +1,6 @@
 #show_data_windows/main_window.py
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (QMainWindow, QToolBar, QComboBox, QMessageBox, QDialog, QTableWidget,
-                               QTableWidgetItem, QHeaderView, QPushButton)
+from PySide6.QtWidgets import (QMainWindow, QToolBar, QComboBox, QMessageBox, QDialog, QPushButton)
 from add_data_windows.insert_customer_window import InsertCustomerDialog
 from add_data_windows.insert_supplier_window import InsertSupplierDialog
 from show_data_windows.all_product_window import AllProductWindow
@@ -13,8 +12,8 @@ from show_data_windows.invoices_window import InvoicesWindow
 from add_data_windows.update_product_window import UpdateProductDialog
 from show_data_windows.supplier_window import SupplierWindow
 from tab_manager import TabManager
-from db_config.db_operations import (update_product, delete_product, get_all_products, get_product_by_barcode,
-                                     get_invoice_by_id, insert_supplier, insert_customer, insert_or_update_product)
+from db_config.db_operations import (update_product, get_all_products, get_invoice_by_id, insert_supplier,
+                                     insert_customer, insert_or_update_product)
 
 
 class MainWindow(QMainWindow):
@@ -78,7 +77,6 @@ class MainWindow(QMainWindow):
 
     def load_all_products(self):
         self.all_products = get_all_products()
-        self.update_product_table(self.all_products)
         self.show_all_products_tab()
 
     def select_dropdown_window(self, index):
@@ -115,12 +113,11 @@ class MainWindow(QMainWindow):
         for index in range(self.tab_manager.count()):
             if self.tab_manager.tabText(index) == "All Products":
                 self.tab_manager.setCurrentIndex(index)
-                self.update_product_table(self.all_products)
                 return
 
         products_tab = AllProductWindow(self)
+        products_tab.signal_created.connect(self.refresh_all_tabs)
         self.tab_manager.add_new_tab("All Products", products_tab)
-        self.update_product_table(self.all_products)
 
     def show_invoices_tab(self):
         for index in range(self.tab_manager.count()):
@@ -129,6 +126,7 @@ class MainWindow(QMainWindow):
                 return
 
         invoices_tab = InvoicesWindow(self)
+        invoices_tab.signal_created.connect(self.refresh_all_tabs)
         self.tab_manager.add_new_tab("Invoices", invoices_tab)
 
     def create_invoice_tab(self):
@@ -138,40 +136,8 @@ class MainWindow(QMainWindow):
                 return
 
         invoice_widget = CreateInvoiceWindow(self)
+        invoice_widget.signal_created.connect(self.refresh_all_tabs)
         self.tab_manager.add_new_tab("Create Invoice", invoice_widget)
-
-    def update_product_table(self, products):
-        all_products_tab = self.findChild(AllProductWindow)
-        if all_products_tab:
-            table_widget = all_products_tab.table_widget
-            table_widget.setRowCount(len(products))
-            table_widget.setColumnCount(10)
-            table_widget.setHorizontalHeaderLabels(
-                ['Name', 'Brand', 'Company', 'Rank Number', 'Barcode', 'Purchase Price', 'Sell Price', 'Quantity', 'Update', 'Remove'])
-
-            for row, product in enumerate(products):
-                table_widget.setItem(row, 0, QTableWidgetItem(product.name))
-                table_widget.setItem(row, 1, QTableWidgetItem(product.brand))
-                table_widget.setItem(row, 2, QTableWidgetItem(product.company))
-                table_widget.setItem(row, 3, QTableWidgetItem(product.rank_number))
-                table_widget.setItem(row, 4, QTableWidgetItem(product.barcode))
-                table_widget.setItem(row, 5, QTableWidgetItem(str(product.pur_price)))
-                table_widget.setItem(row, 6, QTableWidgetItem(str(product.sel_price)))
-                table_widget.setItem(row, 7, QTableWidgetItem(str(product.quantity)))
-
-                # Create Edit button
-                edit_button = QPushButton("Edit")
-                edit_button.clicked.connect(lambda _, b=product.barcode: self.show_update_tab(b))
-                table_widget.setCellWidget(row, 8, edit_button)
-
-                # Create Delete button
-                delete_button = QPushButton("Delete")
-                delete_button.clicked.connect(lambda _, p_id=product.id: self.delete_product(p_id))
-                table_widget.setCellWidget(row, 9, delete_button)
-
-            table_widget.setSizeAdjustPolicy(QTableWidget.AdjustToContents)
-            table_widget.horizontalHeader().setStretchLastSection(True)
-            table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
     def show_invoice_details(self, invoice_id):
         invoice = get_invoice_by_id(invoice_id)
@@ -191,9 +157,13 @@ class MainWindow(QMainWindow):
             if product_data:
                 message = insert_or_update_product(product_data)
                 QMessageBox.information(self, "Success", f"{message}")
+                self.refresh_all_tabs()
 
-                self.load_all_products()
-                self.update_product_table(self.all_products)
+                for index in range(self.tab_manager.count()):
+                    widget = self.tab_manager.widget(index)
+                    if isinstance(widget, AllProductWindow) and self.tab_manager.tabText(index) == "All Products":
+                        widget.load_all_products()
+                        break
             else:
                 QMessageBox.warning(self, "Error", "Please fill in all fields.")
 
@@ -202,17 +172,20 @@ class MainWindow(QMainWindow):
         if dialog.exec() == QDialog.Accepted:
             product_data = dialog.get_product_data()
             if product_data:
-                existing_product = get_product_by_barcode(barcode)
-                if existing_product:
-                    update_product(**product_data)
-                    QMessageBox.information(self, "Success", "Product updated successfully!")
+                update_product(product_data['barcode_id'], product_data['name'], product_data['barcode'],
+                               product_data['brand'], product_data['company'], product_data['rank_number'],
+                               product_data['pur_price'], product_data['sel_price'], product_data['quantity'])
+                QMessageBox.information(self, "Success", "Product updated successfully!")
+                self.refresh_all_tabs()
 
-                    self.load_all_products()
-                    self.update_product_table(self.all_products)
-                else:
-                    QMessageBox.warning(self, "Error", "No product found with the provided barcode.")
+                for index in range(self.tab_manager.count()):
+                    print('index is: ', index)
+                    widget = self.tab_manager.widget(index)
+                    if isinstance(widget, AllProductWindow) and self.tab_manager.tabText(index) == "All Products":
+                        widget.load_all_products()
+                        break
             else:
-                QMessageBox.warning(self, "Error", "Please fill in all fields.")
+                QMessageBox.warning(self, "Error", "No product found with the provided barcode.")
 
     def add_supplier_dialog(self):
         dialog = InsertSupplierDialog(self)
@@ -221,11 +194,12 @@ class MainWindow(QMainWindow):
             if all(supplier_data.values()):
                 insert_supplier(**supplier_data)
                 QMessageBox.information(self, "Success", "Supplier added successfully!")
+                self.refresh_all_tabs()
 
                 for index in range(self.tab_manager.count()):
                     widget = self.tab_manager.widget(index)
                     if isinstance(widget, SupplierWindow) and self.tab_manager.tabText(index) == "Supplier":
-                        widget.load_suppliers()
+                        widget.load_all_supplier()
                         break
             else:
                 QMessageBox.warning(self, "Error", "Please fill in all fields.")
@@ -237,6 +211,7 @@ class MainWindow(QMainWindow):
                 return
 
         supplier_tab = SupplierWindow(self)
+        supplier_tab.signal_created.connect(self.refresh_all_tabs)
         self.tab_manager.add_new_tab("Supplier", supplier_tab)
 
     def add_customer_dialog(self):
@@ -246,11 +221,12 @@ class MainWindow(QMainWindow):
             if all(customer_data.values()):
                 insert_customer(**customer_data)
                 QMessageBox.information(self, "Success", "Customer added successfully!")
+                self.refresh_all_tabs()
 
                 for index in range(self.tab_manager.count()):
                     widget = self.tab_manager.widget(index)
                     if isinstance(widget, CustomerWindow) and self.tab_manager.tabText(index) == "Customer":
-                        widget.load_customers()
+                        widget.load_all_customer()
                         break
             else:
                 QMessageBox.warning(self, "Error", "Please fill in all fields.")
@@ -262,12 +238,24 @@ class MainWindow(QMainWindow):
                 return
 
         customer_tab = CustomerWindow(self)
+        customer_tab.signal_created.connect(self.refresh_all_tabs)
         self.tab_manager.add_new_tab("Customer", customer_tab)
 
-    def delete_product(self, product_id):
-        response = QMessageBox.question(self, "Confirm Delete",
-                                         f"Are you sure you want to delete product ID {product_id}?",
-                                         QMessageBox.Yes | QMessageBox.No)
-        if response == QMessageBox.Yes:
-            delete_product(product_id)
-            self.load_all_products()
+    def refresh_all_tabs(self):
+        for index in range(self.tab_manager.count()):
+            widget = self.tab_manager.widget(index)
+            tab_name = self.tab_manager.tabText(index)
+            if tab_name == "Dashboard" and isinstance(widget, DashboardWindow):
+                widget.load_data()
+
+            elif tab_name == "All Products" and isinstance(widget, AllProductWindow):
+                widget.load_all_products()
+
+            elif tab_name == "Supplier" and isinstance(widget, SupplierWindow):
+                widget.load_all_supplier()
+
+            elif tab_name == "Customer" and isinstance(widget, CustomerWindow):
+                widget.load_all_customer()
+
+            elif tab_name == "Invoices" and isinstance(widget, InvoicesWindow):
+                widget.load_all_invoices()

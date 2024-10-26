@@ -1,4 +1,5 @@
 #show_data_windows/invoice_window.py
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (QWidget, QTableWidget, QTableWidgetItem, QPushButton, QVBoxLayout, QHeaderView,
                                QLineEdit, QHBoxLayout, QSizePolicy, QSpacerItem)
 from db_config.db_operations import get_all_invoices
@@ -6,6 +7,7 @@ from add_data_windows.invoice_detail_window import InvoiceDetailWindow
 
 
 class InvoicesWindow(QWidget):
+    signal_created = Signal()
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent = parent
@@ -75,3 +77,4 @@ class InvoicesWindow(QWidget):
         detail_window.setWindowTitle(f"Invoice Details - {invoice_id}")
         detail_window.resize(600, 400)
         detail_window.exec()
+        self.signal_created.emit()

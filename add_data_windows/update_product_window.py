@@ -9,6 +9,9 @@ class UpdateProductDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Edit Product")
         self.setFixedSize(350, 600)
+        self.is_product = None
+        if barcode is not None:
+            self.is_product = get_product_by_barcode(barcode)
 
         # Create layout
         main_layout = QVBoxLayout(self)
@@ -68,8 +71,8 @@ class UpdateProductDialog(QDialog):
         main_layout.addLayout(button_layout)
         self.submit_button.clicked.connect(self.validate_fields)
 
-        if barcode:
-            self.barcode_input.setText(barcode)
+        if self.is_product:
+            self.barcode_input.setText(self.is_product.barcode)
             self.fetch_product_data()
 
     def fetch_product_data(self):
@@ -91,7 +94,9 @@ class UpdateProductDialog(QDialog):
             QMessageBox.warning(self, "Error", "No product found with the provided barcode.")
 
     def get_product_data(self):
+        product_exist = get_product_by_barcode(self.barcode_input.text())
         return {
+            'barcode_id': product_exist.id,
             'name': self.name_input.text(),
             'barcode': self.barcode_input.text(),
             'brand': self.brand_input.text(),

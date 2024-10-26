@@ -1,3 +1,4 @@
 SQLAlchemy
 db-sqlite3
 PySide6
+pyinstaller

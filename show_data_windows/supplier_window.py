@@ -1,10 +1,12 @@
 #show_data_windows/supplier_window.py
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (QWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QHeaderView, QHBoxLayout,
                                QLineEdit, QSpacerItem, QSizePolicy, QPushButton, QMessageBox)
 from db_config.db_operations import get_all_suppliers, delete_supplier
 
 
 class SupplierWindow(QWidget):
+    signal_created = Signal()
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent = parent
@@ -77,3 +79,4 @@ class SupplierWindow(QWidget):
         if response == QMessageBox.Yes:
             delete_supplier(supplier_id)
             self.load_all_supplier()
+            self.signal_created.emit()

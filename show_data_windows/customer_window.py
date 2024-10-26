@@ -1,10 +1,12 @@
 # show_data_windows/customer_window.py
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QHeaderView, QHBoxLayout, QLineEdit, \
     QSpacerItem, QSizePolicy, QPushButton, QMessageBox
 from db_config.db_operations import get_all_customers, delete_customer
 
 
 class CustomerWindow(QWidget):
+    signal_created = Signal()
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent = parent
@@ -81,3 +83,4 @@ class CustomerWindow(QWidget):
         if response == QMessageBox.Yes:
             delete_customer(product_id)
             self.load_all_customer()
+            self.signal_created.emit()

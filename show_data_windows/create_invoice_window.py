@@ -1,4 +1,5 @@
 #show_data_windows/create_invoice_window.py
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QLineEdit, QTableWidget, QPushButton,
                                QMessageBox, QTableWidgetItem, QGridLayout, QHBoxLayout, QHeaderView, QComboBox)
 from db_config.db_operations import insert_invoice, get_product_by_barcode, get_product_by_name, get_all_customers
@@ -6,6 +7,7 @@ from datetime import datetime
 
 
 class CreateInvoiceWindow(QWidget):
+    signal_created = Signal()
     def __init__(self, parent=None):
         super().__init__(parent)
         self.init_ui()
@@ -254,7 +256,7 @@ class CreateInvoiceWindow(QWidget):
                 'total_price': total
             })
 
-        customer_name = self.customer_name_input.currentText()
+        customer_name = self.customer_name_input.currentText() if self.customer_name_input.currentText() else 'N/N'
         invoice_date = datetime.today().strftime('%Y-%m-%d')
         grand_total = float(self.grand_total_input.text())
         discount = float(self.discount_input.text()) if self.discount_input.text() else 0.0
@@ -262,7 +264,7 @@ class CreateInvoiceWindow(QWidget):
         remaining_amount = grand_total - discount - receiving_amount
 
         # Check if all required fields are filled
-        if customer_name and invoice_items:
+        if grand_total and invoice_items:
             invoice_data = {
                 'customer_name': customer_name,
                 'current_date': invoice_date,
@@ -275,5 +277,6 @@ class CreateInvoiceWindow(QWidget):
             insert_invoice(invoice_data)
             QMessageBox.information(self, "Success", "Invoice created successfully!")
             self.clear_invoice()
+            self.signal_created.emit()
         else:
             QMessageBox.warning(self, "Error", "Please fill in all fields and try again.")
