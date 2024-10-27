@@ -1,8 +1,9 @@
-# dashboard_window.py
+# show_data_windows/dashboard_window.py
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTableWidget, QTableWidgetItem,
                                QHeaderView, QFrame)
 from db_config.db_operations import (get_all_products, get_all_invoices, get_all_customers, get_all_suppliers,
-                                     get_daily_sales, get_daily_profit, get_monthly_sales, get_monthly_profit)
+                                     get_daily_sales, get_daily_profit, get_monthly_sales, get_monthly_profit,
+                                     get_today_invoices)
 
 
 class DashboardWindow(QWidget):
@@ -24,7 +25,7 @@ class DashboardWindow(QWidget):
         self.main_layout.addLayout(self.finance_layout)
 
         # Recent Activity Section
-        recent_activity_label = QLabel("Recent Invoices")
+        recent_activity_label = QLabel("Today's Invoices")
         recent_activity_label.setStyleSheet("font-size: 16px; font-weight: bold;")
         self.main_layout.addWidget(recent_activity_label)
 
@@ -65,7 +66,13 @@ class DashboardWindow(QWidget):
 
         # Update Statistics Section
         self.stats_layout.addWidget(self.create_stat_card("Products", len(get_all_products())))
-        self.stats_layout.addWidget(self.create_stat_card("Invoices", len(get_all_invoices())))
+
+        # Get all invoices and today's invoices separately
+        total_invoices = len(get_all_invoices())
+        today_invoices = len(get_today_invoices())
+        self.stats_layout.addWidget(
+            self.create_stat_card("Invoices (Today/Total)", f"{today_invoices}/{total_invoices}"))
+
         self.stats_layout.addWidget(self.create_stat_card("Customers", len(get_all_customers())))
         self.stats_layout.addWidget(self.create_stat_card("Suppliers", len(get_all_suppliers())))
 
@@ -78,10 +85,10 @@ class DashboardWindow(QWidget):
         self.update_recent_invoices_table()
 
     def update_recent_invoices_table(self):
-        invoices = get_all_invoices()
-        self.recent_invoices_table.setRowCount(min(len(invoices), 6))
+        today_invoices = get_today_invoices()
+        self.recent_invoices_table.setRowCount(len(today_invoices))
 
-        for row, invoice in enumerate(invoices[:6]):
+        for row, invoice in enumerate(today_invoices):
             self.recent_invoices_table.setItem(row, 0, QTableWidgetItem(invoice.current_date))
             self.recent_invoices_table.setItem(row, 1, QTableWidgetItem(invoice.customer_name))
             self.recent_invoices_table.setItem(row, 2, QTableWidgetItem(f"Rup {invoice.receiving_amount}"))

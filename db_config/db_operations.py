@@ -1,8 +1,7 @@
 # db_operations.py
+import random
 from datetime import datetime
-
 from sqlalchemy import func
-
 from db_config.models import Product, Invoice, InvoiceItem, Supplier, Customer
 from db_config.db import SessionLocal
 session = SessionLocal()
@@ -63,6 +62,11 @@ def get_invoice_by_id(invoice_id):
         invoice.invoice_with_item = session.query(InvoiceItem).filter_by(invoice_id=invoice_id).all()
     return invoice
 
+def get_today_invoices():
+    today = datetime.now().date()
+    today_invoices = session.query(Invoice).filter(func.date(Invoice.current_date) == today).all()
+    return today_invoices
+
 def insert_supplier(name, company, phone_num, email, address):
     supplier = Supplier(name=name, company=company, phon_num=phone_num, email=email, address=address)
     session.add(supplier)
@@ -106,7 +110,21 @@ def insert_or_update_product(data):
         session.rollback()
         return f"Error: {str(e)}"
 
+def generate_unique_invoice_code():
+    while True:
+        code = f"{random.randint(1000, 9999)}"
+        if not check_invoice_code_exists(code):
+            return code
+
+def check_invoice_code_exists(code):
+    code_exist = session.query(Invoice).filter_by(invoice_code=code).first()
+    if code_exist:
+        return code_exist
+    else:
+        return None
+
 def insert_invoice(invoice_data):
+    invoice_code = generate_unique_invoice_code()
     invoice = Invoice(
         customer_name=invoice_data['customer_name'],
         current_date=invoice_data['current_date'],
@@ -114,6 +132,7 @@ def insert_invoice(invoice_data):
         discount=invoice_data['discount'],
         receiving_amount=invoice_data['receiving_amount'],
         remaining_amount=invoice_data['remaining_amount'],
+        invoice_code=invoice_code,
     )
 
     for item in invoice_data['items']:
@@ -180,3 +199,14 @@ def get_monthly_profit():
         profit += invoice_profit - invoice.discount
 
     return profit
+
+def get_total_counts():
+    total_products = session.query(func.count(Product.id)).scalar()
+    total_invoices = session.query(func.count(Invoice.id)).scalar()
+    total_customers = session.query(func.count(Customer.id)).scalar()
+    return {
+        'total_products': total_products,
+        'total_customers': total_customers,
+        'total_invoices': total_invoices,
+    }
+
