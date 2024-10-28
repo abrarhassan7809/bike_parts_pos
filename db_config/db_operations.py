@@ -6,21 +6,16 @@ from db_config.models import Product, Invoice, InvoiceItem, Supplier, Customer
 from db_config.db import SessionLocal
 session = SessionLocal()
 
-def insert_product(name, barcode, brand, company, rank_number, pur_price, sel_price, quantity, current_date):
-    product = Product(name=name, barcode=barcode, brand=brand, company=company, rank_number=rank_number,
-                      pur_price=pur_price, sel_price=sel_price, quantity=quantity, current_date=current_date)
+def insert_product(name, company, rank_number, pur_price, sel_price, quantity, current_date):
+    product = Product(name=name, company=company, rank_number=rank_number, pur_price=pur_price, sel_price=sel_price,
+                      quantity=quantity, current_date=current_date)
     session.add(product)
     session.commit()
 
-def update_product(product_id, name=None, barcode=None, brand=None, company=None, rank_number=None, pur_price=None,
-                   sel_price=None, quantity=None):
+def update_product(product_id, name=None, company=None, rank_number=None, pur_price=None,sel_price=None, quantity=None):
     product = session.query(Product).filter_by(id=product_id).first()
     if name:
         product.name = name
-    if barcode:
-        product.barcode = barcode
-    if brand:
-        product.brand = brand
     if company:
         product.company = company
     if rank_number:
@@ -85,8 +80,8 @@ def get_all_customers():
     customers = session.query(Customer).all()
     return customers
 
-def get_product_by_barcode(barcode):
-    products = session.query(Product).filter_by(barcode=barcode).first()
+def get_product_by_id(p_id):
+    products = session.query(Product).filter_by(id=p_id).first()
     return products
 
 def get_product_by_name(name):
@@ -94,8 +89,7 @@ def get_product_by_name(name):
 
 def insert_or_update_product(data):
     try:
-        existing_product = session.query(Product).filter_by(name=data['name'], brand=data['brand'],
-                                                            company=data['company']).first()
+        existing_product = session.query(Product).filter_by(name=data['name'], company=data['company']).first()
 
         if existing_product:
             existing_product.quantity += data['quantity']

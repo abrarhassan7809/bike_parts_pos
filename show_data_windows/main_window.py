@@ -167,14 +167,14 @@ class MainWindow(QMainWindow):
             else:
                 QMessageBox.warning(self, "Error", "Please fill in all fields.")
 
-    def show_update_tab(self, barcode=None):
-        dialog = UpdateProductDialog(self, barcode)
+    def show_update_tab(self, p_id=None):
+        dialog = UpdateProductDialog(self, p_id)
         if dialog.exec() == QDialog.Accepted:
             product_data = dialog.get_product_data()
             if product_data:
-                update_product(product_data['barcode_id'], product_data['name'], product_data['barcode'],
-                               product_data['brand'], product_data['company'], product_data['rank_number'],
-                               product_data['pur_price'], product_data['sel_price'], product_data['quantity'])
+                update_product(product_data['p_id'], product_data['name'], product_data['company'],
+                               product_data['rank_number'], product_data['pur_price'], product_data['sel_price'],
+                               product_data['quantity'])
                 QMessageBox.information(self, "Success", "Product updated successfully!")
                 self.refresh_all_tabs()
 

@@ -17,10 +17,10 @@ class InsertProductDialog(QDialog):
         # Input fields
         self.name_input = QLineEdit(self)
         self.name_input.setFixedHeight(30)
-        self.barcode_input = QLineEdit(self)
-        self.barcode_input.setFixedHeight(30)
-        self.brand_input = QLineEdit(self)
-        self.brand_input.setFixedHeight(30)
+        # self.barcode_input = QLineEdit(self)
+        # self.barcode_input.setFixedHeight(30)
+        # self.brand_input = QLineEdit(self)
+        # self.brand_input.setFixedHeight(30)
         self.company_input = QLineEdit(self)
         self.company_input.setFixedHeight(30)
         self.rank_num_input = QLineEdit(self)
@@ -38,10 +38,10 @@ class InsertProductDialog(QDialog):
         # Add labels and fields to layout
         main_layout.addWidget(QLabel("Product Name:"))
         main_layout.addWidget(self.name_input)
-        main_layout.addWidget(QLabel("Barcode:"))
-        main_layout.addWidget(self.barcode_input)
-        main_layout.addWidget(QLabel("Brand:"))
-        main_layout.addWidget(self.brand_input)
+        # main_layout.addWidget(QLabel("Barcode:"))
+        # main_layout.addWidget(self.barcode_input)
+        # main_layout.addWidget(QLabel("Brand:"))
+        # main_layout.addWidget(self.brand_input)
         main_layout.addWidget(QLabel("Company:"))
         main_layout.addWidget(self.company_input)
         main_layout.addWidget(QLabel("Rank Number:"))
@@ -67,8 +67,6 @@ class InsertProductDialog(QDialog):
     def get_product_data(self):
         return {
             'name': self.name_input.text(),
-            'barcode': self.barcode_input.text(),
-            'brand': self.brand_input.text(),
             'company': self.company_input.text(),
             'rank_number': self.rank_num_input.text(),
             'pur_price': self.pur_price_input.value(),
@@ -79,15 +77,12 @@ class InsertProductDialog(QDialog):
 
     def validate_fields(self):
         name = self.name_input.text().strip()
-        barcode = self.barcode_input.text().strip()
-        brand = self.brand_input.text().strip()
         company = self.company_input.text().strip()
-        rank_number = self.rank_num_input.text().strip()
         pur_price = self.pur_price_input.value()
         sel_price = self.sel_price_input.value()
         quantity = self.quantity_input.value()
 
-        if not name or not sel_price or not brand or not company or not rank_number:
+        if not name or not sel_price or not company:
             QMessageBox.warning(self, "Validation Error", "All fields required.")
             return
 

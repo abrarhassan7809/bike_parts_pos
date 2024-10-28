@@ -58,10 +58,7 @@ class InsertCustomerDialog(QDialog):
         }
 
     def validate_fields(self):
-        # Check for empty fields
-        if not self.name_input.text().strip() or not self.company_input.text().strip() or \
-           not self.phone_input.text().strip() or not self.email_input.text().strip() or \
-           not self.city_input.text().strip() or not self.address_input.text().strip():
-            QMessageBox.warning(self, "Validation Error", "All fields must be filled out.")
+        if not self.name_input.text().strip() or not self.phone_input.text().strip():
+            QMessageBox.warning(self, "Validation Error", "Customer name and Number fields required.")
         else:
             self.accept()

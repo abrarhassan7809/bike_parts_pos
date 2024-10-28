@@ -2,7 +2,7 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QLineEdit, QTableWidget, QPushButton,
                                QMessageBox, QTableWidgetItem, QGridLayout, QHBoxLayout, QHeaderView, QComboBox)
-from db_config.db_operations import (insert_invoice, get_product_by_barcode, get_product_by_name, get_all_customers,
+from db_config.db_operations import (insert_invoice, get_product_by_id, get_product_by_name, get_all_customers,
                                      get_total_counts)
 from datetime import datetime
 from add_data_windows.product_selection_dialog import ProductSelectionDialog
@@ -199,7 +199,7 @@ class CreateInvoiceWindow(QWidget):
     def auto_fill_product_data_by_barcode_real_time(self):
         barcode = self.barcode_input.text().strip()
         if barcode:
-            product = get_product_by_barcode(barcode)
+            product = get_product_by_id(barcode)
             if product:
                 self.product_name_input.setText(product.name)
                 self.brand_input.setText(product.brand)
