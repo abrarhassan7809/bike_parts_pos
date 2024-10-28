@@ -6,3 +6,6 @@ pos_system.db
 main.spec
 build
 dist
+test_file.py
+output.csv
+output.xlsx

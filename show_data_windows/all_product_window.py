@@ -47,7 +47,7 @@ class AllProductWindow(QWidget):
         if search_text:
             self.filtered_products = [
                 product for product in self.all_products
-                if search_text in product.barcode or search_text.lower() in product.name.lower()
+                if search_text in product.company or search_text.lower() in product.name.lower()
             ]
         else:
             self.filtered_products = self.all_products

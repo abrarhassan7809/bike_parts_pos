@@ -1,10 +1,13 @@
 #add_data_windows/insert_product_dialog.py
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QLineEdit, QDoubleSpinBox, QSpinBox, QLabel, QPushButton,
-                               QHBoxLayout, QMessageBox)
+                               QHBoxLayout, QMessageBox, QFileDialog)
 from datetime import datetime
+from add_data_windows.import_product_dialog import ImportProductDialog
 
 
 class InsertProductDialog(QDialog):
+    signal_created = Signal()
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Add Product")
@@ -17,10 +20,6 @@ class InsertProductDialog(QDialog):
         # Input fields
         self.name_input = QLineEdit(self)
         self.name_input.setFixedHeight(30)
-        # self.barcode_input = QLineEdit(self)
-        # self.barcode_input.setFixedHeight(30)
-        # self.brand_input = QLineEdit(self)
-        # self.brand_input.setFixedHeight(30)
         self.company_input = QLineEdit(self)
         self.company_input.setFixedHeight(30)
         self.rank_num_input = QLineEdit(self)
@@ -38,10 +37,6 @@ class InsertProductDialog(QDialog):
         # Add labels and fields to layout
         main_layout.addWidget(QLabel("Product Name:"))
         main_layout.addWidget(self.name_input)
-        # main_layout.addWidget(QLabel("Barcode:"))
-        # main_layout.addWidget(self.barcode_input)
-        # main_layout.addWidget(QLabel("Brand:"))
-        # main_layout.addWidget(self.brand_input)
         main_layout.addWidget(QLabel("Company:"))
         main_layout.addWidget(self.company_input)
         main_layout.addWidget(QLabel("Rank Number:"))
@@ -55,14 +50,19 @@ class InsertProductDialog(QDialog):
 
         self.submit_button = QPushButton("Insert", self)
         self.submit_button.setFixedSize(150, 40)
+        self.submit_button.clicked.connect(self.validate_fields)
+
+        self.import_button = QPushButton("Import File", self)
+        self.import_button.setFixedSize(150, 40)
+        self.import_button.clicked.connect(self.open_import_dialog)
 
         button_layout = QHBoxLayout()
         button_layout.addStretch()
+        button_layout.addWidget(self.import_button)
         button_layout.addWidget(self.submit_button)
         button_layout.addStretch()
 
         main_layout.addLayout(button_layout)
-        self.submit_button.clicked.connect(self.validate_fields)
 
     def get_product_data(self):
         return {
@@ -95,3 +95,9 @@ class InsertProductDialog(QDialog):
             return
 
         self.accept()
+
+    def open_import_dialog(self):
+        dialog = ImportProductDialog(self)
+        if dialog.exec() == QDialog.Accepted:
+            QMessageBox.information(self, "Import", "Products imported successfully.")
+            self.signal_created.emit()

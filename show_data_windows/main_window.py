@@ -152,6 +152,7 @@ class MainWindow(QMainWindow):
 
     def add_product_dialog(self):
         dialog = InsertProductDialog(self)
+        dialog.signal_created.connect(self.refresh_all_tabs)
         if dialog.exec() == QDialog.Accepted:
             product_data = dialog.get_product_data()
             if product_data:
