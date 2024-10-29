@@ -152,7 +152,6 @@ def insert_invoice(invoice_data):
     for item in invoice_data['items']:
         invoice_item = InvoiceItem(
             product_name=item['product_name'],
-            brand=item['brand'],
             company=item['company'],
             quantity=item['quantity'],
             sell_price=item['sell_price'],

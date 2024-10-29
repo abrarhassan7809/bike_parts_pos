@@ -34,8 +34,8 @@ class ProductSelectionDialog(QDialog):
 
         # Product Table
         self.product_table = QTableWidget(self)
-        self.product_table.setColumnCount(5)
-        self.product_table.setHorizontalHeaderLabels(['Name', 'Brand', 'Company', 'Qty', 'Price'])
+        self.product_table.setColumnCount(4)
+        self.product_table.setHorizontalHeaderLabels(['Name', 'Company', 'Qty', 'Price'])
         self.product_table.setSelectionBehavior(QTableWidget.SelectRows)
         layout.addWidget(self.product_table)
 
@@ -60,17 +60,15 @@ class ProductSelectionDialog(QDialog):
         self.product_table.setRowCount(len(products))
         for row, product in enumerate(products):
             self.product_table.setItem(row, 0, QTableWidgetItem(product.name))
-            self.product_table.setItem(row, 1, QTableWidgetItem(product.brand))
-            self.product_table.setItem(row, 2, QTableWidgetItem(product.company))
-            self.product_table.setItem(row, 3, QTableWidgetItem(str(product.quantity)))
-            self.product_table.setItem(row, 4, QTableWidgetItem(str(product.sel_price)))
+            self.product_table.setItem(row, 1, QTableWidgetItem(product.company))
+            self.product_table.setItem(row, 2, QTableWidgetItem(str(product.quantity)))
+            self.product_table.setItem(row, 3, QTableWidgetItem(str(product.sel_price)))
 
     def filter_products(self):
         filter_text = self.search_data.text().strip().lower()
         filtered_products = [
             product for product in self.all_products
             if filter_text in product.name.lower() or
-               filter_text in product.brand.lower() or
                filter_text in product.company.lower()
         ]
         self.display_products(filtered_products)
@@ -80,10 +78,9 @@ class ProductSelectionDialog(QDialog):
         if selected_row >= 0:
             product_data = {
                 'name': self.product_table.item(selected_row, 0).text(),
-                'brand': self.product_table.item(selected_row, 1).text(),
-                'company': self.product_table.item(selected_row, 2).text(),
-                'quantity': self.product_table.item(selected_row, 3).text(),
-                'price': float(self.product_table.item(selected_row, 4).text()),
+                'company': self.product_table.item(selected_row, 1).text(),
+                'quantity': self.product_table.item(selected_row, 2).text(),
+                'price': float(self.product_table.item(selected_row, 3).text()),
             }
             self.product_selected.emit(product_data)
             self.accept()
