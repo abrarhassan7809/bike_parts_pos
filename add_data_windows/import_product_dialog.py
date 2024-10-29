@@ -2,7 +2,7 @@
 from datetime import datetime
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, \
     QMessageBox, QHBoxLayout
-from db_config.db_operations import insert_product
+from db_config.db_operations import insert_product, insert_or_update_product
 import pandas as pd
 
 
@@ -74,6 +74,6 @@ class ImportProductDialog(QDialog):
 
         # Insert products into the database
         for product in products:
-            insert_product(**product)
+            insert_or_update_product(product)
 
         self.accept()
