@@ -1,8 +1,11 @@
 # add_data_windows/import_product_dialog.py
+import time
 from datetime import datetime
+
+from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, \
-    QMessageBox, QHBoxLayout
-from db_config.db_operations import insert_product, insert_or_update_product
+    QMessageBox, QHBoxLayout, QProgressDialog
+from db_config.db_operations import insert_product
 import pandas as pd
 
 
@@ -61,19 +64,37 @@ class ImportProductDialog(QDialog):
     def add_to_database(self):
         products = []
         for row in range(self.table.rowCount()):
-            product_data = {
-                'name': self.table.item(row, 0).text(),
-                'company': self.table.item(row, 1).text(),
-                'rank_number': self.table.item(row, 2).text(),
-                'pur_price': float(self.table.item(row, 3).text()),
-                'sel_price': float(self.table.item(row, 4).text()),
-                'quantity': int(self.table.item(row, 5).text()),
-                'current_date': datetime.today().strftime('%Y-%m-%d'),
-            }
-            products.append(product_data)
+            try:
+                quantity_text = self.table.item(row, 5).text()
+                quantity = int(''.join(filter(str.isdigit, quantity_text)))
+
+                product_data = {
+                    'name': self.table.item(row, 0).text(),
+                    'company': self.table.item(row, 1).text(),
+                    'rank_number': self.table.item(row, 2).text(),
+                    'pur_price': float(self.table.item(row, 3).text()),
+                    'sel_price': float(self.table.item(row, 4).text()),
+                    'quantity': quantity,
+                    'current_date': datetime.today().strftime('%Y-%m-%d'),
+                }
+                products.append(product_data)
+            except ValueError as e:
+                QMessageBox.warning(self, "Data Error", f"Invalid data in row {row + 1}: {str(e)}")
+                return
+
+        # Create progress dialog
+        progress_dialog = QProgressDialog("Adding products to the database...", "Cancel", 0, len(products), self)
+        progress_dialog.setWindowTitle("Processing")
+        progress_dialog.setWindowModality(Qt.WindowModal)
+        progress_dialog.setMinimumDuration(0)
 
         # Insert products into the database
-        for product in products:
-            insert_or_update_product(product)
+        for i, product in enumerate(products):
+            if progress_dialog.wasCanceled():
+                break
+            insert_product(**product)
+            progress_dialog.setValue(i + 1)
+            time.sleep(0.05)
 
+        progress_dialog.close()
         self.accept()
