@@ -5,3 +5,4 @@ pyinstaller
 pandas
 openpyxl
 alembic
+reportlab

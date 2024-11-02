@@ -1,5 +1,7 @@
 #show_data_windows/main_window.py
+import os.path
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QMainWindow, QToolBar, QComboBox, QMessageBox, QDialog, QPushButton)
 from add_data_windows.insert_customer_window import InsertCustomerDialog
 from add_data_windows.insert_supplier_window import InsertSupplierDialog
@@ -10,6 +12,7 @@ from show_data_windows.customer_window import CustomerWindow
 from show_data_windows.dashboard_window import DashboardWindow
 from show_data_windows.invoices_window import InvoicesWindow
 from add_data_windows.update_product_window import UpdateProductDialog
+from show_data_windows.show_inventory_window import ShowInventoryWindow
 from show_data_windows.supplier_window import SupplierWindow
 from tab_manager import TabManager
 from db_config.db_operations import (update_product, get_all_products, get_invoice_by_id, insert_supplier,
@@ -21,6 +24,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Atoms POS System")
         self.setGeometry(200, 200, 1024, 768)
+        self.setWindowIcon(QIcon(os.path.abspath("atom_icon_1.ico")))
         self.button_style = "min-width: 100px; min-height: 35px;"
 
         self.tab_manager = TabManager(self)
@@ -41,7 +45,8 @@ class MainWindow(QMainWindow):
 
         # Add dropdown menu
         tab_dropdown = QComboBox(self)
-        tab_dropdown.addItems(["Select Window", "Show Products", "Show Customers", "Show Suppliers", "Show Invoices",])
+        tab_dropdown.addItems(["Select Window", "Show Products", "Show Customers", "Show Suppliers", "Show Invoices",
+                               "Show Inventory"])
         tab_dropdown.setStyleSheet(self.button_style)
         tab_dropdown.setItemData(0, False, Qt.UserRole - 1)
         tab_dropdown.currentIndexChanged.connect(self.select_dropdown_window)
@@ -90,6 +95,8 @@ class MainWindow(QMainWindow):
             self.show_supplier_tab()
         elif index == 4:
             self.show_invoices_tab()
+        elif index == 5:
+            self.show_inventory_tab()
 
         sender = self.sender()
         if isinstance(sender, QComboBox):
@@ -138,6 +145,16 @@ class MainWindow(QMainWindow):
         invoice_widget = CreateInvoiceWindow(self)
         invoice_widget.signal_created.connect(self.refresh_all_tabs)
         self.tab_manager.add_new_tab("Create Invoice", invoice_widget)
+
+    def show_inventory_tab(self):
+        for index in range(self.tab_manager.count()):
+            if self.tab_manager.tabText(index) == "Inventory":
+                self.tab_manager.setCurrentIndex(index)
+                return
+
+        inventory_widget = ShowInventoryWindow(self)
+        inventory_widget.signal_created.connect(self.refresh_all_tabs)
+        self.tab_manager.add_new_tab("Inventory", inventory_widget)
 
     def show_invoice_details(self, invoice_id):
         invoice = get_invoice_by_id(invoice_id)

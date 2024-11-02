@@ -1,4 +1,4 @@
-# product_selection_dialog.py
+# add_data_windows/product_selection_dialog.py
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QHeaderView,
                                QLineEdit, QLabel, QHBoxLayout)
@@ -11,7 +11,7 @@ class ProductSelectionDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Select Product")
-        self.setMinimumSize(600, 400)
+        self.setMinimumSize(850, 400)
         self.init_ui()
         self.all_products = []
         self.load_products()

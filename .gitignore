@@ -9,3 +9,4 @@ dist
 test_file.py
 output.csv
 output.xlsx
+pdf_invoices
