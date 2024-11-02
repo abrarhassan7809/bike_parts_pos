@@ -277,3 +277,6 @@ class MainWindow(QMainWindow):
 
             elif tab_name == "Invoices" and isinstance(widget, InvoicesWindow):
                 widget.load_all_invoices()
+
+            elif tab_name == "Inventory" and isinstance(widget, ShowInventoryWindow):
+                widget.load_all_inventory()

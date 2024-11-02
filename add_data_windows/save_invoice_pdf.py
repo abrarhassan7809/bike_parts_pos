@@ -6,6 +6,8 @@ from reportlab.lib.styles import getSampleStyleSheet
 import os
 import re
 
+from db_config.db_operations import generate_unique_invoice_code
+
 
 def save_invoice_as_pdf(invoice_data, output_dir):
     safe_customer_name = re.sub(r'[\\/*?:"<>|]', "_", invoice_data['customer_name'])
@@ -21,7 +23,8 @@ def save_invoice_as_pdf(invoice_data, output_dir):
             return
 
     # Create the file path with safe characters
-    file_path = os.path.join(output_dir, f"Invoice_{safe_customer_name}_{safe_date}.pdf")
+    invoice_code = generate_unique_invoice_code()
+    file_path = os.path.join(output_dir, f"Invoice_{invoice_code}_{safe_date}.pdf")
 
     # Prepare the PDF structure
     pdf = SimpleDocTemplate(file_path, pagesize=A4)
