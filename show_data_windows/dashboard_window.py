@@ -38,7 +38,7 @@ class DashboardWindow(QWidget):
     def create_stat_card(self, title, count):
         card = QFrame()
         card.setFrameShape(QFrame.StyledPanel)
-        card.setStyleSheet("background-color: #f7f7f7; padding: 15px; border-radius: 8px;")
+        card.setStyleSheet("background-color: #b5b4b3; padding: 15px; border-radius: 8px;")
 
         layout = QVBoxLayout()
         title_label = QLabel(title)
