@@ -77,10 +77,10 @@ class DashboardWindow(QWidget):
         self.stats_layout.addWidget(self.create_stat_card("Suppliers", len(get_all_suppliers())))
 
         # Update Sales and Profit Section
-        self.finance_layout.addWidget(self.create_stat_card("Today's Sales", f"Rup {get_daily_sales()}"))
-        self.finance_layout.addWidget(self.create_stat_card("Today's Profit", f"Rup {get_daily_profit()}"))
-        self.finance_layout.addWidget(self.create_stat_card("Monthly Sales", f"Rup {get_monthly_sales()}"))
-        self.finance_layout.addWidget(self.create_stat_card("Monthly Profit", f"Rup {get_monthly_profit()}"))
+        self.finance_layout.addWidget(self.create_stat_card("Today's Sales", f"Rup {round(get_daily_sales(), 2)}"))
+        self.finance_layout.addWidget(self.create_stat_card("Today's Profit", f"Rup {round(get_daily_profit(), 2)}"))
+        self.finance_layout.addWidget(self.create_stat_card("Monthly Sales", f"Rup {round(get_monthly_sales(), 2)}"))
+        self.finance_layout.addWidget(self.create_stat_card("Monthly Profit", f"Rup {round(get_monthly_profit(), 2)}"))
 
         self.update_recent_invoices_table()
 
@@ -91,10 +91,10 @@ class DashboardWindow(QWidget):
         for row, invoice in enumerate(today_invoices):
             self.recent_invoices_table.setItem(row, 0, QTableWidgetItem(invoice.current_date))
             self.recent_invoices_table.setItem(row, 1, QTableWidgetItem(invoice.customer_name))
-            self.recent_invoices_table.setItem(row, 2, QTableWidgetItem(f"Rup {invoice.receiving_amount}"))
-            self.recent_invoices_table.setItem(row, 3, QTableWidgetItem(f"Rup {invoice.remaining_amount}"))
-            self.recent_invoices_table.setItem(row, 4, QTableWidgetItem(f"Rup {invoice.discount}"))
-            self.recent_invoices_table.setItem(row, 5, QTableWidgetItem(f"Rup {invoice.grand_total}"))
+            self.recent_invoices_table.setItem(row, 2, QTableWidgetItem(f"Rup {round(invoice.receiving_amount, 2)}"))
+            self.recent_invoices_table.setItem(row, 3, QTableWidgetItem(f"Rup {round(invoice.remaining_amount, 2)}"))
+            self.recent_invoices_table.setItem(row, 4, QTableWidgetItem(f"Rup {round(invoice.discount, 2)}"))
+            self.recent_invoices_table.setItem(row, 5, QTableWidgetItem(f"Rup {round(invoice.grand_total, 2)}"))
 
     def clear_layout(self, layout):
         while layout.count():

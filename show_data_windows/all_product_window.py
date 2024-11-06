@@ -64,9 +64,9 @@ class AllProductWindow(QWidget):
             self.table_widget.setItem(row, 0, QTableWidgetItem(product.name))
             self.table_widget.setItem(row, 1, QTableWidgetItem(product.company))
             self.table_widget.setItem(row, 2, QTableWidgetItem(product.rank_number))
-            self.table_widget.setItem(row, 3, QTableWidgetItem(str(product.pur_price)))
-            self.table_widget.setItem(row, 4, QTableWidgetItem(str(product.sel_price)))
-            self.table_widget.setItem(row, 5, QTableWidgetItem(str(product.quantity)))
+            self.table_widget.setItem(row, 3, QTableWidgetItem(str(round(product.pur_price, 2))))
+            self.table_widget.setItem(row, 4, QTableWidgetItem(str(round(product.sel_price, 2))))
+            self.table_widget.setItem(row, 5, QTableWidgetItem(str(round(product.quantity, 2))))
 
             # Create Edit button
             edit_button = QPushButton("Edit")

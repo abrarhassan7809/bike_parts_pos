@@ -7,8 +7,8 @@ from db_config.db import SessionLocal
 session = SessionLocal()
 
 def insert_product(name, company, rank_number, pur_price, sel_price, quantity, current_date):
-    product = Product(name=name, company=company, rank_number=rank_number, pur_price=pur_price, sel_price=sel_price,
-                      quantity=quantity, current_date=current_date)
+    product = Product(name=name, company=company, rank_number=rank_number, pur_price=round(pur_price, 2),
+                      sel_price=round(sel_price, 2), quantity=quantity, current_date=current_date)
     session.add(product)
     session.commit()
 
@@ -21,9 +21,9 @@ def update_product(product_id, name=None, company=None, rank_number=None, pur_pr
     if rank_number:
         product.rank_number = rank_number
     if pur_price:
-        product.pur_price = pur_price
+        product.pur_price = round(pur_price, 2)
     if sel_price:
-        product.sel_price = sel_price
+        product.sel_price = round(sel_price, 2)
     if quantity:
         product.quantity = quantity
     session.commit()
@@ -113,8 +113,8 @@ def insert_or_update_product(data):
 
         if existing_product:
             existing_product.quantity += data['quantity']
-            existing_product.pur_price = data['pur_price']
-            existing_product.sel_price = data['sel_price']
+            existing_product.pur_price = round(data['pur_price'], 2)
+            existing_product.sel_price = round(data['sel_price'], 2)
             session.commit()
             return "Product updated successfully"
         else:

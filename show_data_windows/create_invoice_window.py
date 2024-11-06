@@ -235,24 +235,24 @@ class CreateInvoiceWindow(QWidget):
     def update_total_price(self):
         price = float(self.price_input.text() or 0)
         quantity = int(self.quantity_input.text() or 1)
-        total = price * quantity
-        self.total_input.setText(str(total))
+        total = round(price * quantity, 2)
+        self.total_input.setText(f"{total:.2f}")
 
     def update_grand_total(self):
         grand_total = 0.0
         for row in range(self.products_input.rowCount()):
             grand_total += float(self.products_input.item(row, 4).text())
 
-        self.grand_total_input.setText(str(grand_total))
+        grand_total = round(grand_total, 2)
+        self.grand_total_input.setText(f"{grand_total:.2f}")
         self.update_remaining_amount()
 
     def update_remaining_amount(self):
         grand_total = float(self.grand_total_input.text() or 0)
         discount = float(self.discount_input.text() or 0)
         receiving_amount = float(self.receiving_amount_input.text() or 0)
-        remaining_amount = grand_total - discount - receiving_amount
-
-        self.remaining_amount_input.setText(str(remaining_amount))
+        remaining_amount = round(grand_total - discount - receiving_amount, 2)
+        self.remaining_amount_input.setText(f"{remaining_amount:.2f}")
 
     def remove_item(self, row):
         self.products_input.removeRow(row)
@@ -281,13 +281,9 @@ class CreateInvoiceWindow(QWidget):
             quantity = int(self.products_input.item(row, 2).text())
             price = float(self.products_input.item(row, 3).text())
             total = float(self.products_input.item(row, 4).text())
-            invoice_items.append({
-                'product_name': product_name,
-                'company': company,
-                'quantity': quantity,
-                'sell_price': price,
-                'total_price': total
-            })
+            invoice_items.append({'product_name': product_name, 'company': company, 'quantity': quantity,
+                                  'sell_price': round(price, 2), 'total_price': round(total, 2)
+                                  })
 
         customer_name = self.customer_name_input.currentText() if self.customer_name_input.currentText() else 'N/N'
         invoice_date = datetime.today().strftime('%Y-%m-%d')
@@ -301,17 +297,21 @@ class CreateInvoiceWindow(QWidget):
             invoice_data = {
                 'customer_name': customer_name,
                 'current_date': invoice_date,
-                'grand_total': grand_total,
-                'discount': discount,
-                'receiving_amount': receiving_amount,
-                'remaining_amount': remaining_amount,
+                'grand_total': round(grand_total, 2),
+                'discount': round(discount, 2),
+                'receiving_amount': round(receiving_amount, 2),
+                'remaining_amount': round(remaining_amount, 2),
                 'items': invoice_items
             }
-            insert_invoice(invoice_data)
-            QMessageBox.information(self, "Success", "Invoice created successfully!")
-            self.save_invoice_pdf(invoice_data)
-            self.clear_invoice()
-            self.signal_created.emit()
+            reply = QMessageBox.question(self, "Save Invoice", "Want to create invoice!",
+                                         QMessageBox.Yes | QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                insert_invoice(invoice_data)
+                self.save_invoice_pdf(invoice_data)
+                self.clear_invoice()
+                self.signal_created.emit()
+            else:
+                return
         else:
             QMessageBox.warning(self, "Error", "Please fill in all fields and try again.")
 

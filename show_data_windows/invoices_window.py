@@ -59,9 +59,9 @@ class InvoicesWindow(QWidget):
         for row, invoice in enumerate(invoices):
             self.table_widget.setItem(row, 0, QTableWidgetItem(invoice.current_date))
             self.table_widget.setItem(row, 1, QTableWidgetItem(invoice.customer_name))
-            self.table_widget.setItem(row, 2, QTableWidgetItem(str(invoice.receiving_amount)))
-            self.table_widget.setItem(row, 3, QTableWidgetItem(str(invoice.remaining_amount)))
-            self.table_widget.setItem(row, 4, QTableWidgetItem(str(invoice.grand_total)))
+            self.table_widget.setItem(row, 2, QTableWidgetItem(str(round(invoice.receiving_amount, 2))))
+            self.table_widget.setItem(row, 3, QTableWidgetItem(str(round(invoice.remaining_amount, 2))))
+            self.table_widget.setItem(row, 4, QTableWidgetItem(str(round(invoice.grand_total, 2))))
 
             # Create a Details button
             details_button = QPushButton("View Details")

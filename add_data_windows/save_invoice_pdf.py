@@ -1,7 +1,7 @@
 # add_data_windows/save_invoice_pdf.py
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 import os
 import re
@@ -26,8 +26,9 @@ def save_invoice_as_pdf(invoice_data, output_dir):
     invoice_code = generate_unique_invoice_code()
     file_path = os.path.join(output_dir, f"Invoice_{invoice_code}_{safe_date}.pdf")
 
-    # Prepare the PDF structure
-    pdf = SimpleDocTemplate(file_path, pagesize=A4)
+    # Prepare the PDF structure with margins
+    pdf = SimpleDocTemplate(file_path, pagesize=A4, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+    width, height = A4
     elements = []
 
     # Define styles
@@ -36,8 +37,8 @@ def save_invoice_as_pdf(invoice_data, output_dir):
     normal_style = styles["Normal"]
 
     # Add company title and details
-    title = Paragraph("Atoms Company", title_style)
-    elements.append(title)
+    elements.append(Paragraph("Atoms Company", title_style))
+    elements.append(Spacer(1, 12))
 
     elements.append(Paragraph(f"Customer Name: {invoice_data['customer_name']}", normal_style))
     elements.append(Paragraph(f"Invoice Date: {invoice_data['current_date']}", normal_style))
@@ -45,7 +46,7 @@ def save_invoice_as_pdf(invoice_data, output_dir):
     elements.append(Paragraph(f"Discount: {invoice_data['discount']}", normal_style))
     elements.append(Paragraph(f"Receiving Amount: {invoice_data['receiving_amount']}", normal_style))
     elements.append(Paragraph(f"Remaining Amount: {invoice_data['remaining_amount']}", normal_style))
-    elements.append(Paragraph(" ", normal_style))  # Space
+    elements.append(Spacer(1, 24))
 
     # Prepare table data
     table_data = [["Product", "Company", "Quantity", "Price", "Total"]]
@@ -59,16 +60,18 @@ def save_invoice_as_pdf(invoice_data, output_dir):
         ])
 
     # Create table with styles
-    table = Table(table_data)
+    table = Table(table_data, colWidths=[width * 0.2, width * 0.2, width * 0.2, width * 0.2, width * 0.2], repeatRows=1)
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('LEFTPADDING', (0, 0), (-1, -1), 5),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 5),
     ]))
     elements.append(table)
 
