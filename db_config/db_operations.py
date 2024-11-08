@@ -173,6 +173,25 @@ def insert_invoice(invoice_data):
     finally:
         session.close()
 
+
+def update_invoice(invoice_data):
+    invoice = session.query(Invoice).filter_by(id=invoice_data['id']).first()
+    if invoice:
+        invoice.customer_name = invoice_data['customer_name']
+        invoice.current_date = invoice_data['current_date']
+        invoice.grand_total = invoice_data['grand_total']
+        invoice.discount = invoice_data['discount']
+        invoice.receiving_amount = invoice_data['receiving_amount']
+        invoice.remaining_amount = invoice_data['remaining_amount']
+
+        # Update items (this may need adjusting based on your schema)
+        session.query(InvoiceItem).filter_by(invoice_id=invoice.id).delete()
+        for item in invoice_data['items']:
+            new_item = InvoiceItem(invoice_id=invoice.id, **item)
+            session.add(new_item)
+
+        session.commit()
+
 def get_daily_sales():
     today = datetime.now().date()
     sales = session.query(func.sum(Invoice.grand_total)).filter(func.date(Invoice.current_date) == today).scalar()

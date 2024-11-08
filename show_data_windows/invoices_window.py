@@ -2,15 +2,17 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (QWidget, QTableWidget, QTableWidgetItem, QPushButton, QVBoxLayout, QHeaderView,
                                QLineEdit, QHBoxLayout, QSizePolicy, QSpacerItem)
-from db_config.db_operations import get_all_invoices
-from add_data_windows.invoice_detail_window import InvoiceDetailWindow
+from add_data_windows.add_invoice_window import CreateInvoiceWindow
+from db_config.db_operations import get_all_invoices, get_invoice_by_id
+from show_data_windows.invoice_detail_window import InvoiceDetailWindow
 
 
 class InvoicesWindow(QWidget):
     signal_created = Signal()
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, tab_manager=None):
         super().__init__(parent)
         self.parent = parent
+        self.tab_manager = tab_manager
         self.all_invoices = []
         self.filtered_invoices = []
         self.init_ui()
@@ -44,7 +46,6 @@ class InvoicesWindow(QWidget):
 
     def filter_invoices(self):
         customer_text = self.search_data.text().strip().lower()
-
         self.filtered_invoices = [invoice for invoice in self.all_invoices
             if (customer_text in invoice.customer_name.lower()) or (customer_text in invoice.current_date)]
 
@@ -52,9 +53,9 @@ class InvoicesWindow(QWidget):
 
     def update_invoice_table(self, invoices):
         self.table_widget.setRowCount(len(invoices))
-        self.table_widget.setColumnCount(6)
+        self.table_widget.setColumnCount(7)
         self.table_widget.setHorizontalHeaderLabels(
-            ['Date', 'Customer Name', 'Receiving Amount', 'Remaining Amount', 'Total Amount', 'Details'])
+            ['Date', 'Customer Name', 'Receiving Amount', 'Remaining Amount', 'Total Amount', 'Details', 'Edit'])
 
         for row, invoice in enumerate(invoices):
             self.table_widget.setItem(row, 0, QTableWidgetItem(invoice.current_date))
@@ -68,6 +69,11 @@ class InvoicesWindow(QWidget):
             details_button.clicked.connect(lambda _, i_id=invoice.id: self.show_invoice_details(i_id))
             self.table_widget.setCellWidget(row, 5, details_button)
 
+            # Edit button
+            edit_button = QPushButton("Edit")
+            edit_button.clicked.connect(lambda _, i_id=invoice.id: self.update_invoice_data(i_id))
+            self.table_widget.setCellWidget(row, 6, edit_button)
+
         self.table_widget.setSizeAdjustPolicy(QTableWidget.AdjustToContents)
         self.table_widget.horizontalHeader().setStretchLastSection(True)
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -78,3 +84,19 @@ class InvoicesWindow(QWidget):
         detail_window.resize(600, 400)
         detail_window.exec()
         self.signal_created.emit()
+
+    def create_invoice_tab(self, invoice=None):
+        for index in range(self.tab_manager.count()):
+            if self.tab_manager.tabText(index) == "Create Invoice":
+                self.tab_manager.setCurrentIndex(index)
+                return
+
+        invoice_widget = CreateInvoiceWindow(invoice=invoice, parent=self)
+        invoice_widget.signal_created.connect(self.load_all_invoices)
+        tab_title = "Edit Invoice" if invoice else "Create Invoice"
+        self.tab_manager.add_new_tab(tab_title, invoice_widget)
+
+    def update_invoice_data(self, invoice_id):
+        invoice = get_invoice_by_id(invoice_id)
+        if invoice:
+            self.create_invoice_tab(invoice=invoice)

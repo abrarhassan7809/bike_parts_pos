@@ -1,12 +1,11 @@
-#show_data_windows/create_invoice_window.py
+#show_data_windows/add_invoice_window.py
 import os
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QLineEdit, QTableWidget, QPushButton,
-                               QMessageBox, QTableWidgetItem, QGridLayout, QHBoxLayout, QHeaderView, QComboBox,
-                               QFileDialog)
+                               QMessageBox, QTableWidgetItem, QGridLayout, QHBoxLayout, QHeaderView, QComboBox)
 from add_data_windows.save_invoice_pdf import save_invoice_as_pdf
-from db_config.db_operations import (insert_invoice, get_product_by_id, get_product_by_name, get_all_customers,
-                                     get_total_counts)
+from db_config.db_operations import (insert_invoice, get_product_by_name, get_all_customers, get_total_counts,
+                                     update_invoice)
 from datetime import datetime
 from add_data_windows.product_selection_dialog import ProductSelectionDialog
 
@@ -14,10 +13,14 @@ from add_data_windows.product_selection_dialog import ProductSelectionDialog
 class CreateInvoiceWindow(QWidget):
     signal_created = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, invoice=None, parent=None):
         super().__init__(parent)
+        self.invoice = invoice
         self.init_ui()
         self.load_data()
+
+        if self.invoice is not None:
+            self.load_invoice_data()
 
         self.product_selection_dialog = ProductSelectionDialog(self)
         self.product_selection_dialog.product_selected.connect(self.fill_product_fields)
@@ -85,7 +88,13 @@ class CreateInvoiceWindow(QWidget):
         self.add_item_btn.clicked.connect(self.add_item)
 
         self.create_btn = QPushButton("Create Invoice", self)
-        self.create_btn.clicked.connect(self.save_invoice)
+
+        if self.invoice is not None:
+            self.create_btn.setText("Update Invoice")
+            self.create_btn.clicked.connect(self.update_invoice)
+        else:
+            self.create_btn.setText("Create Invoice")
+            self.create_btn.clicked.connect(self.save_invoice)
 
         # Add Clear button
         self.clear_btn = QPushButton("Clear", self)
@@ -204,7 +213,6 @@ class CreateInvoiceWindow(QWidget):
         quantity = int(self.quantity_input.text())
         total_quantity = int(self.total_products_input.text())
 
-        # Get quantity and validate that it's within stock
         if quantity > total_quantity:
             QMessageBox.warning(self, "Error", "Quantity Not available in stock.")
             return
@@ -212,7 +220,6 @@ class CreateInvoiceWindow(QWidget):
         available_stock = total_quantity - quantity
         self.total_products_input.setText(str(available_stock))
 
-        # Calculate total based on price and quantity inputs
         price = float(self.price_input.text() or 0)
         total = price * quantity
         row_position = self.products_input.rowCount()
@@ -224,12 +231,10 @@ class CreateInvoiceWindow(QWidget):
         self.products_input.setItem(row_position, 3, QTableWidgetItem(str(price)))
         self.products_input.setItem(row_position, 4, QTableWidgetItem(str(total)))
 
-        # Create "Remove" button for each row
         remove_btn = QPushButton("Remove")
         remove_btn.clicked.connect(lambda: self.remove_item(row_position))
         self.products_input.setCellWidget(row_position, 5, remove_btn)
 
-        # Update the grand total after adding the item
         self.update_grand_total()
 
     def update_total_price(self):
@@ -282,8 +287,7 @@ class CreateInvoiceWindow(QWidget):
             price = float(self.products_input.item(row, 3).text())
             total = float(self.products_input.item(row, 4).text())
             invoice_items.append({'product_name': product_name, 'company': company, 'quantity': quantity,
-                                  'sell_price': round(price, 2), 'total_price': round(total, 2)
-                                  })
+                                  'sell_price': round(price, 2), 'total_price': round(total, 2)})
 
         customer_name = self.customer_name_input.currentText() if self.customer_name_input.currentText() else 'N/N'
         invoice_date = datetime.today().strftime('%Y-%m-%d')
@@ -294,14 +298,10 @@ class CreateInvoiceWindow(QWidget):
 
         # Check if all required fields are filled
         if grand_total and invoice_items:
-            invoice_data = {
-                'customer_name': customer_name,
-                'current_date': invoice_date,
-                'grand_total': round(grand_total, 2),
-                'discount': round(discount, 2),
-                'receiving_amount': round(receiving_amount, 2),
-                'remaining_amount': round(remaining_amount, 2),
-                'items': invoice_items
+            invoice_data = {'customer_name': customer_name, 'current_date': invoice_date,
+                            'grand_total': round(grand_total, 2), 'discount': round(discount, 2),
+                            'receiving_amount': round(receiving_amount, 2),
+                            'remaining_amount': round(remaining_amount, 2), 'items': invoice_items
             }
             reply = QMessageBox.question(self, "Save Invoice", "Want to create invoice!",
                                          QMessageBox.Yes | QMessageBox.No)
@@ -325,3 +325,61 @@ class CreateInvoiceWindow(QWidget):
         if reply == QMessageBox.Yes:
             save_invoice_as_pdf(invoice_data, output_dir)
             QMessageBox.information(self, "PDF Saved", "Invoice saved as PDF successfully.")
+
+    def load_invoice_data(self):
+        self.customer_name_input.setCurrentText(self.invoice.customer_name)
+        self.discount_input.setText(str(self.invoice.discount))
+        self.receiving_amount_input.setText(str(self.invoice.receiving_amount))
+        self.grand_total_input.setText(str(self.invoice.grand_total))
+        self.remaining_amount_input.setText(str(self.invoice.remaining_amount))
+
+        # Populate the product table
+        self.products_input.setRowCount(0)  # Clear any existing rows
+        for item in self.invoice.invoice_with_item:
+            row_position = self.products_input.rowCount()
+            self.products_input.insertRow(row_position)
+            self.products_input.setItem(row_position, 0, QTableWidgetItem(item.product_name))
+            self.products_input.setItem(row_position, 1, QTableWidgetItem(item.company))
+            self.products_input.setItem(row_position, 2, QTableWidgetItem(str(item.quantity)))
+            self.products_input.setItem(row_position, 3, QTableWidgetItem(str(item.sell_price)))
+            self.products_input.setItem(row_position, 4, QTableWidgetItem(str(item.total_price)))
+
+            remove_btn = QPushButton("Remove")
+            remove_btn.clicked.connect(lambda _, r=row_position: self.remove_item(r))
+            self.products_input.setCellWidget(row_position, 5, remove_btn)
+
+        self.update_grand_total()
+
+    def update_invoice(self):
+        invoice_items = []
+        for row in range(self.products_input.rowCount()):
+            product_name = self.products_input.item(row, 0).text()
+            company = self.products_input.item(row, 1).text()
+            quantity = int(self.products_input.item(row, 2).text())
+            price = float(self.products_input.item(row, 3).text())
+            total = float(self.products_input.item(row, 4).text())
+            invoice_items.append({'product_name': product_name, 'company': company, 'quantity': quantity,
+                                  'sell_price': round(price, 2), 'total_price': round(total, 2)})
+
+        customer_name = self.customer_name_input.currentText() if self.customer_name_input.currentText() else 'N/N'
+        invoice_date = datetime.today().strftime('%Y-%m-%d')
+        grand_total = float(self.grand_total_input.text())
+        discount = float(self.discount_input.text()) if self.discount_input.text() else 0.0
+        receiving_amount = float(self.receiving_amount_input.text()) if self.receiving_amount_input.text() else 0.0
+        remaining_amount = grand_total - discount - receiving_amount
+
+        # Create the updated invoice data structure
+        updated_invoice_data = {'id': self.invoice.id, 'customer_name': customer_name, 'current_date': invoice_date,
+                                'grand_total': round(grand_total, 2), 'discount': round(discount, 2),
+                                'receiving_amount': round(receiving_amount, 2),
+                                'remaining_amount': round(remaining_amount, 2), 'items': invoice_items}
+
+        reply = QMessageBox.question(self, "Update Invoice", "You want to update this invoice?",
+                                     QMessageBox.Yes | QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            update_invoice(updated_invoice_data)
+            self.save_invoice_pdf(updated_invoice_data)
+            self.signal_created.emit()
+            self.clear_invoice()
+        else:
+            return

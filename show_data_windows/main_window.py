@@ -3,17 +3,17 @@ import os.path
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QMainWindow, QToolBar, QComboBox, QMessageBox, QDialog, QPushButton)
-from add_data_windows.insert_customer_window import InsertCustomerDialog
-from add_data_windows.insert_supplier_window import InsertSupplierDialog
-from show_data_windows.all_product_window import AllProductWindow
-from add_data_windows.insert_product_window import InsertProductDialog
-from show_data_windows.create_invoice_window import CreateInvoiceWindow
-from show_data_windows.customer_window import CustomerWindow
+from add_data_windows.add_customer_window import InsertCustomerDialog
+from add_data_windows.add_supplier_window import InsertSupplierDialog
+from show_data_windows.products_window import AllProductWindow
+from add_data_windows.add_product_window import InsertProductDialog
+from add_data_windows.add_invoice_window import CreateInvoiceWindow
+from show_data_windows.customers_window import CustomerWindow
 from show_data_windows.dashboard_window import DashboardWindow
 from show_data_windows.invoices_window import InvoicesWindow
 from add_data_windows.update_product_window import UpdateProductDialog
-from show_data_windows.show_inventory_window import ShowInventoryWindow
-from show_data_windows.supplier_window import SupplierWindow
+from show_data_windows.inventories_window import ShowInventoryWindow
+from show_data_windows.suppliers_window import SupplierWindow
 from tab_manager import TabManager
 from db_config.db_operations import (update_product, get_all_products, get_invoice_by_id, insert_supplier,
                                      insert_customer, insert_or_update_product)
@@ -118,13 +118,13 @@ class MainWindow(QMainWindow):
 
     def show_all_products_tab(self):
         for index in range(self.tab_manager.count()):
-            if self.tab_manager.tabText(index) == "All Products":
+            if self.tab_manager.tabText(index) == "Products":
                 self.tab_manager.setCurrentIndex(index)
                 return
 
         products_tab = AllProductWindow(self)
         products_tab.signal_created.connect(self.refresh_all_tabs)
-        self.tab_manager.add_new_tab("All Products", products_tab)
+        self.tab_manager.add_new_tab("Products", products_tab)
 
     def show_invoices_tab(self):
         for index in range(self.tab_manager.count()):
@@ -132,7 +132,7 @@ class MainWindow(QMainWindow):
                 self.tab_manager.setCurrentIndex(index)
                 return
 
-        invoices_tab = InvoicesWindow(self)
+        invoices_tab = InvoicesWindow(self, self.tab_manager)
         invoices_tab.signal_created.connect(self.refresh_all_tabs)
         self.tab_manager.add_new_tab("Invoices", invoices_tab)
 
@@ -142,7 +142,7 @@ class MainWindow(QMainWindow):
                 self.tab_manager.setCurrentIndex(index)
                 return
 
-        invoice_widget = CreateInvoiceWindow(self)
+        invoice_widget = CreateInvoiceWindow(invoice=None, parent=self)
         invoice_widget.signal_created.connect(self.refresh_all_tabs)
         self.tab_manager.add_new_tab("Create Invoice", invoice_widget)
 
@@ -179,7 +179,7 @@ class MainWindow(QMainWindow):
 
                 for index in range(self.tab_manager.count()):
                     widget = self.tab_manager.widget(index)
-                    if isinstance(widget, AllProductWindow) and self.tab_manager.tabText(index) == "All Products":
+                    if isinstance(widget, AllProductWindow) and self.tab_manager.tabText(index) == "Products":
                         widget.load_all_products()
                         break
             else:
@@ -199,7 +199,7 @@ class MainWindow(QMainWindow):
                 for index in range(self.tab_manager.count()):
                     print('index is: ', index)
                     widget = self.tab_manager.widget(index)
-                    if isinstance(widget, AllProductWindow) and self.tab_manager.tabText(index) == "All Products":
+                    if isinstance(widget, AllProductWindow) and self.tab_manager.tabText(index) == "Products":
                         widget.load_all_products()
                         break
             else:
@@ -266,7 +266,7 @@ class MainWindow(QMainWindow):
             if tab_name == "Dashboard" and isinstance(widget, DashboardWindow):
                 widget.load_data()
 
-            elif tab_name == "All Products" and isinstance(widget, AllProductWindow):
+            elif tab_name == "Products" and isinstance(widget, AllProductWindow):
                 widget.load_all_products()
 
             elif tab_name == "Supplier" and isinstance(widget, SupplierWindow):
