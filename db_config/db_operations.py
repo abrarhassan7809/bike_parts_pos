@@ -1,9 +1,10 @@
-# db_operations.py
+# db_config/db_operations.py
 import random
 from datetime import datetime
 from sqlalchemy import func
 from db_config.models import Product, Invoice, InvoiceItem, Supplier, Customer
 from db_config.db import SessionLocal
+from datetime import timedelta
 session = SessionLocal()
 
 def insert_product(name, company, rank_number, pur_price, sel_price, quantity, current_date):
@@ -202,6 +203,28 @@ def get_daily_profit():
     profit = 0
 
     invoices = session.query(Invoice).filter(func.date(Invoice.current_date) == today).all()
+    for invoice in invoices:
+        invoice_profit = 0
+        for item in invoice.invoice_with_item:
+            product = session.query(Product).filter_by(name=item.product_name).first()
+            if product:
+                invoice_profit += (item.sell_price - product.pur_price) * item.quantity
+        profit += invoice_profit - invoice.discount
+
+    return profit
+
+def get_weekly_sales():
+    today = datetime.now().date()
+    week_start = today - timedelta(days=7)
+    sales = session.query(func.sum(Invoice.grand_total)).filter(func.date(Invoice.current_date) >= week_start).scalar()
+    return sales if sales else 0
+
+def get_weekly_profit():
+    today = datetime.now().date()
+    week_start = today - timedelta(days=7)
+    profit = 0
+
+    invoices = session.query(Invoice).filter(func.date(Invoice.current_date) >= week_start).all()
     for invoice in invoices:
         invoice_profit = 0
         for item in invoice.invoice_with_item:

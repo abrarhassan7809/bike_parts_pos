@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTable
                                QHeaderView, QFrame)
 from db_config.db_operations import (get_all_products, get_all_invoices, get_all_customers, get_all_suppliers,
                                      get_daily_sales, get_daily_profit, get_monthly_sales, get_monthly_profit,
-                                     get_today_invoices)
+                                     get_weekly_sales, get_weekly_profit, get_today_invoices)
 
 
 class DashboardWindow(QWidget):
@@ -79,6 +79,8 @@ class DashboardWindow(QWidget):
         # Update Sales and Profit Section
         self.finance_layout.addWidget(self.create_stat_card("Today's Sales", f"Rup {round(get_daily_sales(), 2)}"))
         self.finance_layout.addWidget(self.create_stat_card("Today's Profit", f"Rup {round(get_daily_profit(), 2)}"))
+        self.finance_layout.addWidget(self.create_stat_card("Weekly Sales", f"Rup {round(get_weekly_sales(), 2)}"))
+        self.finance_layout.addWidget(self.create_stat_card("Weekly Profit", f"Rup {round(get_weekly_profit(), 2)}"))
         self.finance_layout.addWidget(self.create_stat_card("Monthly Sales", f"Rup {round(get_monthly_sales(), 2)}"))
         self.finance_layout.addWidget(self.create_stat_card("Monthly Profit", f"Rup {round(get_monthly_profit(), 2)}"))
 
