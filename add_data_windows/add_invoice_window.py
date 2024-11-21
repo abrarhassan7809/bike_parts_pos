@@ -1,8 +1,8 @@
 #show_data_windows/add_invoice_window.py
 import os
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QLineEdit, QTableWidget, QPushButton,
-                               QMessageBox, QTableWidgetItem, QGridLayout, QHBoxLayout, QHeaderView, QComboBox)
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QLineEdit, QTableWidget, QPushButton, QMessageBox,
+                               QTableWidgetItem, QGridLayout, QHBoxLayout, QHeaderView, QDateEdit)
 from add_data_windows.save_invoice_pdf import save_invoice_as_pdf
 from db_config.db_operations import (insert_invoice, get_product_by_name, get_all_customers, get_total_counts,
                                      update_invoice)
@@ -44,7 +44,7 @@ class CreateInvoiceWindow(QWidget):
         self.quantity_input.setPlaceholderText("Quantity")
         self.quantity_input.textChanged.connect(self.update_total_price)
 
-        self.customer_name_input = QComboBox(self)
+        self.customer_name_input = QLineEdit(self)
         self.customer_name_input.setPlaceholderText("Select Customer")
 
         self.price_input = QLineEdit(self)
@@ -59,6 +59,10 @@ class CreateInvoiceWindow(QWidget):
         self.discount_input.setPlaceholderText("Discount")
         self.discount_input.textChanged.connect(self.update_remaining_amount)
 
+        self.current_date_input = QDateEdit(self)
+        self.current_date_input.setCalendarPopup(True)
+        self.current_date_input.setDate(datetime.today())
+
         self.receiving_amount_input = QLineEdit(self)
         self.receiving_amount_input.setPlaceholderText("Receiving Amount")
         self.receiving_amount_input.textChanged.connect(self.update_remaining_amount)
@@ -66,6 +70,10 @@ class CreateInvoiceWindow(QWidget):
         self.remaining_amount_input = QLineEdit(self)
         self.remaining_amount_input.setPlaceholderText("Remaining Amount")
         self.remaining_amount_input.setReadOnly(True)
+
+        self.grand_total_input = QLineEdit(self)
+        self.grand_total_input.setPlaceholderText("Grand Total")
+        self.grand_total_input.setReadOnly(True)
 
         self.total_products_input = QLineEdit(self)
         self.total_products_input.setPlaceholderText("Total Products")
@@ -78,10 +86,6 @@ class CreateInvoiceWindow(QWidget):
         self.total_invoices_input = QLineEdit(self)
         self.total_invoices_input.setPlaceholderText("Total Invoices")
         self.total_invoices_input.setReadOnly(True)
-
-        self.grand_total_input = QLineEdit(self)
-        self.grand_total_input.setPlaceholderText("Grand Total")
-        self.grand_total_input.setReadOnly(True)
 
         # Buttons for adding items and creating invoice
         self.add_item_btn = QPushButton("Add Item", self)
@@ -135,6 +139,9 @@ class CreateInvoiceWindow(QWidget):
         grid_layout.addWidget(QLabel("Discount:"), 3, 2)
         grid_layout.addWidget(self.discount_input, 3, 3)
 
+        grid_layout.addWidget(QLabel("Select Date:"), 0, 4)
+        grid_layout.addWidget(self.current_date_input, 0, 5)
+
         grid_layout.addWidget(QLabel("Receiving Amount:"), 1, 4)
         grid_layout.addWidget(self.receiving_amount_input, 1, 5)
 
@@ -170,9 +177,9 @@ class CreateInvoiceWindow(QWidget):
 
     def load_data(self):
         customers = get_all_customers()
-        self.customer_name_input.clear()
-        for customer in customers:
-            self.customer_name_input.addItem(customer.name, customer)
+        # self.customer_name_input.clear()
+        # for customer in customers:
+        #     self.customer_name_input.addItem(customer.name, customer)
 
         # Load and display total counts
         totals = get_total_counts()
@@ -289,8 +296,9 @@ class CreateInvoiceWindow(QWidget):
             invoice_items.append({'product_name': product_name, 'company': company, 'quantity': quantity,
                                   'sell_price': round(price, 2), 'total_price': round(total, 2)})
 
-        customer_name = self.customer_name_input.currentText() if self.customer_name_input.currentText() else 'N/N'
-        invoice_date = datetime.today().strftime('%Y-%m-%d')
+        # customer_name = self.customer_name_input.currentText() if self.customer_name_input.currentText() else 'N/N'
+        customer_name = self.customer_name_input.text() if self.customer_name_input.text() else 'N/N'
+        invoice_date = self.current_date_input.date().toString("yyyy-MM-dd")
         grand_total = float(self.grand_total_input.text())
         discount = float(self.discount_input.text()) if self.discount_input.text() else 0.0
         receiving_amount = float(self.receiving_amount_input.text()) if self.receiving_amount_input.text() else 0.0
@@ -327,7 +335,8 @@ class CreateInvoiceWindow(QWidget):
             QMessageBox.information(self, "PDF Saved", "Invoice saved as PDF successfully.")
 
     def load_invoice_data(self):
-        self.customer_name_input.setCurrentText(self.invoice.customer_name)
+        # self.customer_name_input.setCurrentText(self.invoice.customer_name)
+        self.customer_name_input.text()
         self.discount_input.setText(str(self.invoice.discount))
         self.receiving_amount_input.setText(str(self.invoice.receiving_amount))
         self.grand_total_input.setText(str(self.invoice.grand_total))
@@ -361,7 +370,8 @@ class CreateInvoiceWindow(QWidget):
             invoice_items.append({'product_name': product_name, 'company': company, 'quantity': quantity,
                                   'sell_price': round(price, 2), 'total_price': round(total, 2)})
 
-        customer_name = self.customer_name_input.currentText() if self.customer_name_input.currentText() else 'N/N'
+        # customer_name = self.customer_name_input.currentText() if self.customer_name_input.currentText() else 'N/N'
+        customer_name = self.customer_name_input.text() if self.customer_name_input.text() else 'N/N'
         invoice_date = datetime.today().strftime('%Y-%m-%d')
         grand_total = float(self.grand_total_input.text())
         discount = float(self.discount_input.text()) if self.discount_input.text() else 0.0
