@@ -106,7 +106,8 @@ def get_product_by_id(p_id):
     return products
 
 def get_product_by_name(name):
-    return session.query(Product).filter_by(name=name).first()
+    product = session.query(Product).filter_by(name=name).first()
+    return product
 
 def insert_or_update_product(data):
     try:

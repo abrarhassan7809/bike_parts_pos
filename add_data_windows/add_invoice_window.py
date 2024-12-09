@@ -4,8 +4,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QLineEdit, QTableWidget, QPushButton, QMessageBox,
                                QTableWidgetItem, QGridLayout, QHBoxLayout, QHeaderView, QDateEdit)
 from add_data_windows.save_invoice_pdf import save_invoice_as_pdf
-from db_config.db_operations import (insert_invoice, get_product_by_name, get_all_customers, get_total_counts,
-                                     update_invoice)
+from db_config.db_operations import (insert_invoice, get_product_by_name, get_total_counts, update_invoice)
 from datetime import datetime
 from add_data_windows.product_selection_dialog import ProductSelectionDialog
 
@@ -107,8 +106,7 @@ class CreateInvoiceWindow(QWidget):
         # Add a table for product selection
         self.products_input = QTableWidget(self)
         self.products_input.setColumnCount(6)
-        self.products_input.setHorizontalHeaderLabels(['Product', 'Company', 'Quantity', 'Price', 'Total',
-                                                       'Remove'])
+        self.products_input.setHorizontalHeaderLabels(['Product', 'Company', 'Quantity', 'Price', 'Total', 'Remove'])
 
         # Stretch columns evenly across the table width
         header = self.products_input.horizontalHeader()
@@ -151,7 +149,7 @@ class CreateInvoiceWindow(QWidget):
         grid_layout.addWidget(QLabel("Grand Total:"), 3, 4)
         grid_layout.addWidget(self.grand_total_input, 3, 5)
 
-        grid_layout.addWidget(QLabel("Total Products:"), 1, 6)
+        grid_layout.addWidget(QLabel("Total Pro/Qty:"), 1, 6)
         grid_layout.addWidget(self.total_products_input, 1, 7)
 
         grid_layout.addWidget(QLabel("Total Customers:"), 2, 6)
@@ -176,12 +174,6 @@ class CreateInvoiceWindow(QWidget):
         main_layout.addLayout(button_layout)
 
     def load_data(self):
-        customers = get_all_customers()
-        # self.customer_name_input.clear()
-        # for customer in customers:
-        #     self.customer_name_input.addItem(customer.name, customer)
-
-        # Load and display total counts
         totals = get_total_counts()
         self.total_products_input.setText(str(totals['total_products']))
         self.total_customers_input.setText(str(totals['total_customers']))
@@ -296,7 +288,6 @@ class CreateInvoiceWindow(QWidget):
             invoice_items.append({'product_name': product_name, 'company': company, 'quantity': quantity,
                                   'sell_price': round(price, 2), 'total_price': round(total, 2)})
 
-        # customer_name = self.customer_name_input.currentText() if self.customer_name_input.currentText() else 'N/N'
         customer_name = self.customer_name_input.text() if self.customer_name_input.text() else 'N/N'
         invoice_date = self.current_date_input.date().toString("yyyy-MM-dd")
         grand_total = float(self.grand_total_input.text())
@@ -335,15 +326,19 @@ class CreateInvoiceWindow(QWidget):
             QMessageBox.information(self, "PDF Saved", "Invoice saved as PDF successfully.")
 
     def load_invoice_data(self):
-        # self.customer_name_input.setCurrentText(self.invoice.customer_name)
-        self.customer_name_input.text()
+        self.customer_name_input.setText(str(self.invoice.customer_name))
+        if isinstance(self.invoice.current_date, str):
+            invoice_date = datetime.strptime(self.invoice.current_date, "%Y-%m-%d").date()
+            self.current_date_input.setDate(invoice_date)
+        elif isinstance(self.invoice.current_date, datetime):
+            self.current_date_input.setDate(self.invoice.current_date.date())
         self.discount_input.setText(str(self.invoice.discount))
         self.receiving_amount_input.setText(str(self.invoice.receiving_amount))
         self.grand_total_input.setText(str(self.invoice.grand_total))
         self.remaining_amount_input.setText(str(self.invoice.remaining_amount))
 
         # Populate the product table
-        self.products_input.setRowCount(0)  # Clear any existing rows
+        self.products_input.setRowCount(0)
         for item in self.invoice.invoice_with_item:
             row_position = self.products_input.rowCount()
             self.products_input.insertRow(row_position)
@@ -370,9 +365,9 @@ class CreateInvoiceWindow(QWidget):
             invoice_items.append({'product_name': product_name, 'company': company, 'quantity': quantity,
                                   'sell_price': round(price, 2), 'total_price': round(total, 2)})
 
-        # customer_name = self.customer_name_input.currentText() if self.customer_name_input.currentText() else 'N/N'
         customer_name = self.customer_name_input.text() if self.customer_name_input.text() else 'N/N'
-        invoice_date = datetime.today().strftime('%Y-%m-%d')
+        invoice_date_qdate = self.current_date_input.date()
+        invoice_date = invoice_date_qdate.toString("yyyy-MM-dd")
         grand_total = float(self.grand_total_input.text())
         discount = float(self.discount_input.text()) if self.discount_input.text() else 0.0
         receiving_amount = float(self.receiving_amount_input.text()) if self.receiving_amount_input.text() else 0.0

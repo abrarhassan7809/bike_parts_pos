@@ -48,12 +48,12 @@ class UpdateProductDialog(QDialog):
         main_layout.addWidget(QLabel("Quantity:"))
         main_layout.addWidget(self.quantity_input)
 
+        self.submit_button = QPushButton("Update", self)
+        self.submit_button.setFixedSize(150, 40)
+
         self.fetch_button = QPushButton("Fetch Product", self)
         self.fetch_button.setFixedSize(150, 40)
         self.fetch_button.clicked.connect(self.fetch_product_data)
-
-        self.submit_button = QPushButton("Update", self)
-        self.submit_button.setFixedSize(150, 40)
 
         button_layout = QHBoxLayout()
         button_layout.addStretch()
@@ -84,7 +84,7 @@ class UpdateProductDialog(QDialog):
             self.sel_price_input.setValue(product_data.sel_price)
             self.quantity_input.setValue(product_data.quantity)
         else:
-            QMessageBox.warning(self, "Error", "No product found with the provided barcode.")
+            QMessageBox.warning(self, "Error", "No product found with the provided name.")
 
     def get_product_data(self):
         return {

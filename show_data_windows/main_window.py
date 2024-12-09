@@ -13,6 +13,7 @@ from show_data_windows.dashboard_window import DashboardWindow
 from show_data_windows.invoices_window import InvoicesWindow
 from add_data_windows.update_product_window import UpdateProductDialog
 from show_data_windows.inventories_window import ShowInventoryWindow
+from show_data_windows.create_multi_invoice_tabs import CreateMultiInvoiceTabs
 from show_data_windows.suppliers_window import SupplierWindow
 from tab_manager import TabManager
 from db_config.db_operations import (update_product, get_all_products, get_invoice_by_id, insert_supplier,
@@ -23,7 +24,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Atoms POS System")
-        self.setGeometry(200, 200, 1024, 768)
+        # self.setGeometry(200, 200, 1024, 768)
         self.setWindowIcon(QIcon(os.path.abspath("atom_icon_1.ico")))
         self.button_style = "min-width: 100px; min-height: 35px;"
 
@@ -142,7 +143,7 @@ class MainWindow(QMainWindow):
                 self.tab_manager.setCurrentIndex(index)
                 return
 
-        invoice_widget = CreateInvoiceWindow(invoice=None, parent=self)
+        invoice_widget = CreateMultiInvoiceTabs(invoice=None, parent=self)
         invoice_widget.signal_created.connect(self.refresh_all_tabs)
         self.tab_manager.add_new_tab("Create Invoice", invoice_widget)
 
