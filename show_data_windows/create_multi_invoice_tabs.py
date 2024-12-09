@@ -17,7 +17,7 @@ class CreateMultiInvoiceTabs(QWidget):
         button_layout.addStretch()
 
         # Add a button to create new invoice tabs
-        self.create_invoice_tab_btn = QPushButton("Create New", self)
+        self.create_invoice_tab_btn = QPushButton("Create New Invoice", self)
         self.create_invoice_tab_btn.clicked.connect(self.add_new_tab)
         button_layout.addWidget(self.create_invoice_tab_btn)
 

@@ -266,3 +266,21 @@ def get_total_counts():
         'total_invoices': total_invoices,
     }
 
+def get_sales_and_profit_in_range(start_date, end_date):
+    sales = session.query(func.sum(Invoice.grand_total)) \
+                   .filter(Invoice.current_date.between(start_date, end_date)).scalar()
+
+    invoices = session.query(Invoice).filter(Invoice.current_date.between(start_date, end_date)).all()
+    profit = 0
+    for invoice in invoices:
+        for item in invoice.invoice_with_item:
+            product = session.query(Product).filter_by(name=item.product_name).first()
+            if product:
+                profit += (item.sell_price - product.pur_price) * item.quantity
+        profit -= invoice.discount
+
+    return sales if sales else 0, profit
+
+def get_invoices_in_range(start_date, end_date):
+    invoices = session.query(Invoice).filter(Invoice.current_date.between(start_date, end_date)).all()
+    return invoices
