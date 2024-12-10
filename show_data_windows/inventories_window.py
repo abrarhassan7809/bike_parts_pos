@@ -37,6 +37,7 @@ class ShowInventoryWindow(QWidget):
         self.main_layout.addLayout(btn_layout)
 
         self.table_widget = QTableWidget(self)
+        self.table_widget.setStyleSheet("background-color: #9eb2c0")
         self.main_layout.addWidget(self.table_widget)
 
         self.load_all_inventory()

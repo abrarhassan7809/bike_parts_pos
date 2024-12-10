@@ -105,6 +105,7 @@ class CreateInvoiceWindow(QWidget):
 
         # Add a table for product selection
         self.products_input = QTableWidget(self)
+        self.products_input.setStyleSheet("background-color: #9eb2c0")
         self.products_input.setColumnCount(6)
         self.products_input.setHorizontalHeaderLabels(['Product', 'Company', 'Quantity', 'Price', 'Total', 'Remove'])
 

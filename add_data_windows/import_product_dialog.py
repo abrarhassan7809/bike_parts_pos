@@ -21,6 +21,7 @@ class ImportProductDialog(QDialog):
 
         # Table for data preview
         self.table = QTableWidget()
+        self.table.setStyleSheet("background-color: #9eb2c0")
         main_layout.addWidget(self.table)
 
         self.load_button = QPushButton("Load File")

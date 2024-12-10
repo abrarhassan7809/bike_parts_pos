@@ -34,6 +34,7 @@ class ProductSelectionDialog(QDialog):
 
         # Product Table
         self.product_table = QTableWidget(self)
+        self.product_table.setStyleSheet("background-color: #9eb2c0")
         self.product_table.setColumnCount(4)
         self.product_table.setHorizontalHeaderLabels(['Name', 'Company', 'Qty', 'Price'])
         self.product_table.setSelectionBehavior(QTableWidget.SelectRows)

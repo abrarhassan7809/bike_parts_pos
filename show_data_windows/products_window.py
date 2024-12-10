@@ -33,6 +33,7 @@ class AllProductWindow(QWidget):
         self.layout.addLayout(search_layout)
 
         self.table_widget = QTableWidget(self)
+        self.table_widget.setStyleSheet("background-color: #9eb2c0")
         self.layout.addWidget(self.table_widget)
 
         self.load_all_products()

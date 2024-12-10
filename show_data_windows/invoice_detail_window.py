@@ -15,6 +15,7 @@ class InvoiceDetailWindow(QDialog):
 
         # Create a table widget to display invoice items
         self.table_widget = QTableWidget(self)
+        self.table_widget.setStyleSheet("background-color: #9eb2c0")
         layout.addWidget(self.table_widget)
 
         # Load invoice details

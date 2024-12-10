@@ -73,13 +73,13 @@ class DashboardWindow(QWidget):
     def create_stat_card(self, title, count):
         card = QFrame()
         card.setFrameShape(QFrame.StyledPanel)
-        card.setStyleSheet("background-color: #b5b4b3; padding: 15px; border-radius: 8px;")
+        card.setStyleSheet("background-color: #9eb2c0; padding: 15px; border-radius: 8px;")
 
         layout = QVBoxLayout()
         title_label = QLabel(title)
-        title_label.setStyleSheet("font-size: 14px; color: #555;")
+        title_label.setStyleSheet("font-size: 14px; color: #fff;")
         count_label = QLabel(str(count))
-        count_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #333;")
+        count_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #fff;")
 
         layout.addWidget(title_label)
         layout.addWidget(count_label)
@@ -89,6 +89,7 @@ class DashboardWindow(QWidget):
 
     def create_recent_invoices_table(self):
         table = QTableWidget()
+        table.setStyleSheet("background-color: #9eb2c0")
         table.setColumnCount(6)
         table.setHorizontalHeaderLabels(["Date", "Customer", "Receiving", "Remaining", "Discount", "Total Amount"])
         table.horizontalHeader().setStretchLastSection(True)
