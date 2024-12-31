@@ -51,7 +51,7 @@ class UpdateProductDialog(QDialog):
         self.submit_button = QPushButton("Update", self)
         self.submit_button.setFixedSize(150, 40)
 
-        self.fetch_button = QPushButton("Fetch Product", self)
+        self.fetch_button = QPushButton("Get Product", self)
         self.fetch_button.setFixedSize(150, 40)
         self.fetch_button.clicked.connect(self.fetch_product_data)
 

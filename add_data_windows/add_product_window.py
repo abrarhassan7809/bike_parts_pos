@@ -8,6 +8,7 @@ from add_data_windows.import_product_dialog import ImportProductDialog
 
 class InsertProductDialog(QDialog):
     signal_created = Signal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Add Product")
@@ -48,7 +49,7 @@ class InsertProductDialog(QDialog):
         main_layout.addWidget(QLabel("Quantity:"))
         main_layout.addWidget(self.quantity_input)
 
-        self.submit_button = QPushButton("Insert", self)
+        self.submit_button = QPushButton("Add Product", self)
         self.submit_button.setFixedSize(150, 40)
         self.submit_button.clicked.connect(self.validate_fields)
 

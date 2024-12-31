@@ -28,7 +28,7 @@ class ImportProductDialog(QDialog):
         self.load_button.setFixedSize(150, 40)
         self.load_button.clicked.connect(self.load_file)
 
-        self.add_button = QPushButton("Add to Database")
+        self.add_button = QPushButton("Add Products")
         self.add_button.setFixedSize(150, 40)
         self.add_button.clicked.connect(self.add_to_database)
 

@@ -22,8 +22,8 @@ class CreateMultiInvoiceTabs(QWidget):
         button_layout.addWidget(self.create_invoice_tab_btn)
 
         self.tab_widget = QTabWidget(self)
-        self.tab_widget.setTabsClosable(True)  # Make tabs closable
-        self.tab_widget.tabCloseRequested.connect(self.close_tab)  # Connect to close event
+        self.tab_widget.setTabsClosable(True)
+        self.tab_widget.tabCloseRequested.connect(self.close_tab)
 
         main_layout.addLayout(button_layout)
         main_layout.addWidget(self.tab_widget)
@@ -38,8 +38,9 @@ class CreateMultiInvoiceTabs(QWidget):
         new_invoice.signal_created.connect(lambda: self.close_tab(tab_index))
 
     def close_tab(self, index):
-        reply = QMessageBox.question(
-            self, "Close Tab", "Do you want to close this tab?", QMessageBox.Yes | QMessageBox.No
-        )
+        self.signal_created.emit()
+        reply = QMessageBox.question(self, "Close Tab",
+                                     "Do you want to close this tab?", QMessageBox.Yes | QMessageBox.No)
+
         if reply == QMessageBox.Yes:
             self.tab_widget.removeTab(index)

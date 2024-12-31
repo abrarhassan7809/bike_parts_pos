@@ -301,8 +301,8 @@ class CreateInvoiceWindow(QWidget):
             invoice_data = {'customer_name': customer_name, 'current_date': invoice_date,
                             'grand_total': round(grand_total, 2), 'discount': round(discount, 2),
                             'receiving_amount': round(receiving_amount, 2),
-                            'remaining_amount': round(remaining_amount, 2), 'items': invoice_items
-            }
+                            'remaining_amount': round(remaining_amount, 2), 'items': invoice_items}
+
             reply = QMessageBox.question(self, "Save Invoice", "Want to create invoice!",
                                          QMessageBox.Yes | QMessageBox.No)
             if reply == QMessageBox.Yes:

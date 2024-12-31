@@ -9,6 +9,7 @@ from show_data_windows.invoice_detail_window import InvoiceDetailWindow
 
 class InvoicesWindow(QWidget):
     signal_created = Signal()
+
     def __init__(self, parent=None, tab_manager=None):
         super().__init__(parent)
         self.parent = parent
@@ -94,6 +95,7 @@ class InvoicesWindow(QWidget):
 
         invoice_widget = CreateInvoiceWindow(invoice=invoice, parent=self)
         invoice_widget.signal_created.connect(self.load_all_invoices)
+        invoice_widget.signal_created.connect(self.signal_created.emit)
         tab_title = "Edit Invoice" if invoice else "Create Invoice"
         self.tab_manager.add_new_tab(tab_title, invoice_widget)
 

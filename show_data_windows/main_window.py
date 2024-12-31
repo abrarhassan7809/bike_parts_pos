@@ -1,6 +1,6 @@
 #show_data_windows/main_window.py
 import os.path
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QMainWindow, QToolBar, QComboBox, QMessageBox, QDialog, QPushButton)
 from add_data_windows.add_customer_window import InsertCustomerDialog
@@ -34,6 +34,38 @@ class MainWindow(QMainWindow):
         self.toolbar = self.create_toolbar()
         self.all_products = []
         self.load_dashboard_tab()
+        self.notified_products = set()
+
+        self.start_product_check()
+
+    def start_product_check(self):
+        self.product_check_timer = QTimer(self)
+        self.product_check_timer.timeout.connect(self.check_product_quantities)
+        self.product_check_timer.start(100000)  # 100000ms = 1mint
+
+    def check_product_quantities(self):
+        # Get all products from the database
+        self.all_products = get_all_products()
+
+        # Loop through products and check quantity
+        low_stock_products = []
+        for product in self.all_products:
+            if product.quantity < 3 and product.id not in self.notified_products:
+                low_stock_products.append(product)
+
+        # If there are any low stock products
+        if low_stock_products:
+            low_stock_message = "The following products have less than 3 quantities:\n"
+            for product in low_stock_products:
+                low_stock_message += f"{product.name} - Quantity: {product.quantity}\n"
+
+            reply = QMessageBox.warning(self, "Low Stock Alert", low_stock_message, QMessageBox.Yes | QMessageBox.No)
+
+            if reply == QMessageBox.Yes:
+                for product in low_stock_products:
+                    self.notified_products.add(product.id)
+            else:
+                pass
 
     def create_toolbar(self):
         toolbar = QToolBar("Operations")
