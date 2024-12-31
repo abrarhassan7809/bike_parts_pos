@@ -1,11 +1,10 @@
 # add_data_windows/import_product_dialog.py
 import time
 from datetime import datetime
-
 from PySide6.QtGui import Qt
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, \
-    QMessageBox, QHBoxLayout, QProgressDialog
-from db_config.db_operations import insert_product
+from PySide6.QtWidgets import (QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog,
+                               QMessageBox, QHBoxLayout, QProgressDialog)
+from db_config.db_operations import insert_product, update_product, insert_or_update_product
 import pandas as pd
 
 
@@ -93,7 +92,10 @@ class ImportProductDialog(QDialog):
         for i, product in enumerate(products):
             if progress_dialog.wasCanceled():
                 break
-            insert_product(**product)
+            result = insert_or_update_product(product)
+            if "Error" in result:
+                QMessageBox.warning(self, "Error", f"Error adding product: {result}")
+                return
             progress_dialog.setValue(i + 1)
             time.sleep(0.05)
 

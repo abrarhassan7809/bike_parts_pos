@@ -34,26 +34,6 @@ def delete_product(product_id):
     session.delete(product)
     session.commit()
 
-
-# def insert_products_from_file(products_data):
-#     errors = []
-#     success_count = 0
-#     for product_data in products_data:
-#         product_data['pur_price'] = float(product_data['pur_price'])
-#         product_data['sel_price'] = float(product_data['sel_price'])
-#         product_data['quantity'] = int(product_data['quantity'])
-#         product_data['current_date'] = datetime.now().strftime('%Y-%m-%d')
-#
-#         result = insert_or_update_product(product_data)
-#         if "Error" in result:
-#             errors.append(result)
-#         else:
-#             success_count += 1
-#
-#     session.commit()
-#     error_message = f"\nErrors:\n{', '.join(errors)}" if errors else ""
-#     return f"Imported {success_count} products successfully.{error_message}"
-
 def delete_customer(customer_id):
     customer = session.query(Customer).filter_by(id=customer_id).first()
     session.delete(customer)
