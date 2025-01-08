@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         self.load_dashboard_tab()
         self.notified_products = set()
 
-        self.start_product_check()
+        # self.start_product_check()
 
     def start_product_check(self):
         self.product_check_timer = QTimer(self)
