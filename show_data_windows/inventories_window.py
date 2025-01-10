@@ -58,13 +58,15 @@ class ShowInventoryWindow(QWidget):
     def update_inventory_table(self, all_products):
         self.table_widget.clearContents()
         self.table_widget.setRowCount(len(all_products))
-        self.table_widget.setColumnCount(3)
-        self.table_widget.setHorizontalHeaderLabels(['Name', 'Company', 'Quantity'])
+        self.table_widget.setColumnCount(5)
+        self.table_widget.setHorizontalHeaderLabels(['Name', 'Company', 'Purchase Price', 'Sell Price', 'Quantity'])
 
         for row, product in enumerate(all_products):
             self.table_widget.setItem(row, 0, QTableWidgetItem(product.name))
             self.table_widget.setItem(row, 1, QTableWidgetItem(product.company))
-            self.table_widget.setItem(row, 2, QTableWidgetItem(str(product.quantity)))
+            self.table_widget.setItem(row, 2, QTableWidgetItem(str(round(product.pur_price, 2))))
+            self.table_widget.setItem(row, 3, QTableWidgetItem(str(round(product.sel_price, 2))))
+            self.table_widget.setItem(row, 4, QTableWidgetItem(str(product.quantity)))
 
         self.table_widget.setSizeAdjustPolicy(QTableWidget.AdjustToContents)
         self.table_widget.horizontalHeader().setStretchLastSection(True)
@@ -97,12 +99,12 @@ class ShowInventoryWindow(QWidget):
         y_position -= 40  # Move down for the next content
 
         # Prepare data for the table
-        data = [["Name", "Company", "Quantity"]]
+        data = [["Name", "Company", 'Purchase Price', 'Sell Price', "Quantity"]]
         for product in self.filtered_inventory:
-            data.append([product.name, product.company, str(product.quantity)])
+            data.append([product.name, product.company, str(product.pur_price), str(product.sel_price), str(product.quantity)])
 
         # Create Table object
-        table = Table(data, colWidths=[200, 200, 100])
+        table = Table(data, colWidths=[180, 120, 80, 80, 70])
         style = TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -122,7 +124,7 @@ class ShowInventoryWindow(QWidget):
         # Draw table rows, and handle page overflow
         for i in range(0, len(data), max_rows_per_page):
             page_data = data[i:i + max_rows_per_page]
-            table = Table(page_data, colWidths=[200, 200, 100])
+            table = Table(page_data, colWidths=[180, 120, 80, 80, 70])
             table.setStyle(style)
             table.wrapOn(pdf, width, height)
             table.drawOn(pdf, 40, y_position - (len(page_data) * row_height))
