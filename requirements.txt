@@ -6,3 +6,6 @@ pandas
 openpyxl
 alembic
 reportlab
+
+# create an exe file
+# pyinstaller --clean --onefile --icon=assets\images\atom_file_icon_1.ico --noconsole main.py
