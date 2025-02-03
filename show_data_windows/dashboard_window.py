@@ -4,7 +4,8 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTable
                                QHeaderView, QFrame, QDateEdit, QPushButton)
 from db_config.db_operations import (get_all_products, get_all_invoices, get_all_customers, get_all_suppliers,
                                      get_daily_sales, get_daily_profit, get_weekly_sales, get_weekly_profit,
-                                     get_today_invoices, get_sales_and_profit_in_range, get_invoices_in_range)
+                                     get_today_invoices, get_sales_and_profit_in_range, get_invoices_in_range,
+                                     get_product_by_name)
 
 
 class DashboardWindow(QWidget):
@@ -90,8 +91,8 @@ class DashboardWindow(QWidget):
     def create_recent_invoices_table(self):
         table = QTableWidget()
         table.setStyleSheet("background-color: #9eb2c0")
-        table.setColumnCount(6)
-        table.setHorizontalHeaderLabels(["Date", "Customer", "Receiving", "Remaining", "Discount", "Total Amount"])
+        table.setColumnCount(7)
+        table.setHorizontalHeaderLabels(["Date", "Customer", "Receiving", "Remaining", "Discount", "Total Amount", "Profit"])
         table.horizontalHeader().setStretchLastSection(True)
         table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         return table
@@ -120,16 +121,25 @@ class DashboardWindow(QWidget):
         self.update_recent_invoices_table()
 
     def update_recent_invoices_table(self):
+        profit = 0
         today_invoices = get_today_invoices()
         self.recent_invoices_table.setRowCount(len(today_invoices))
 
         for row, invoice in enumerate(today_invoices):
+            invoice_profit = 0
+            for item in invoice.invoice_with_item:
+                product = get_product_by_name(item.product_name)
+                if product:
+                    invoice_profit += (item.sell_price - product.pur_price) * item.quantity
+            profit += invoice_profit - invoice.discount
+
             self.recent_invoices_table.setItem(row, 0, QTableWidgetItem(invoice.current_date))
             self.recent_invoices_table.setItem(row, 1, QTableWidgetItem(invoice.customer_name))
             self.recent_invoices_table.setItem(row, 2, QTableWidgetItem(f"Rup {round(invoice.receiving_amount, 2)}"))
             self.recent_invoices_table.setItem(row, 3, QTableWidgetItem(f"Rup {round(invoice.remaining_amount, 2)}"))
             self.recent_invoices_table.setItem(row, 4, QTableWidgetItem(f"Rup {round(invoice.discount, 2)}"))
             self.recent_invoices_table.setItem(row, 5, QTableWidgetItem(f"Rup {round(invoice.grand_total, 2)}"))
+            self.recent_invoices_table.setItem(row, 6, QTableWidgetItem(f"Rup {round(profit, 2)}"))
 
     def update_date_range_analysis(self):
         start_date = self.start_date_edit.date().toPython()
@@ -144,15 +154,24 @@ class DashboardWindow(QWidget):
         self.update_invoices_table(invoices_in_range)
 
     def update_invoices_table(self, invoices):
+        profit = 0
         self.recent_invoices_table.setRowCount(len(invoices))
 
         for row, invoice in enumerate(invoices):
+            invoice_profit = 0
+            for item in invoice.invoice_with_item:
+                product = get_product_by_name(item.product_name)
+                if product:
+                    invoice_profit += (item.sell_price - product.pur_price) * item.quantity
+            profit += invoice_profit - invoice.discount
+
             self.recent_invoices_table.setItem(row, 0, QTableWidgetItem(invoice.current_date))
             self.recent_invoices_table.setItem(row, 1, QTableWidgetItem(invoice.customer_name))
             self.recent_invoices_table.setItem(row, 2, QTableWidgetItem(f"Rup {round(invoice.receiving_amount, 2)}"))
             self.recent_invoices_table.setItem(row, 3, QTableWidgetItem(f"Rup {round(invoice.remaining_amount, 2)}"))
             self.recent_invoices_table.setItem(row, 4, QTableWidgetItem(f"Rup {round(invoice.discount, 2)}"))
             self.recent_invoices_table.setItem(row, 5, QTableWidgetItem(f"Rup {round(invoice.grand_total, 2)}"))
+            self.recent_invoices_table.setItem(row, 6, QTableWidgetItem(f"Rup {round(profit, 2)}"))
 
     def clear_layout(self, layout):
         while layout.count():

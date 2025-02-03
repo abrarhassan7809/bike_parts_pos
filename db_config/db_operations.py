@@ -48,6 +48,10 @@ def get_all_products():
     products = session.query(Product).all()
     return products
 
+def get_product_by_name(product_name):
+    product = session.query(Product).filter_by(name=product_name).first()
+    return product
+
 def get_all_invoices():
     products = session.query(Invoice).all()
     return products
